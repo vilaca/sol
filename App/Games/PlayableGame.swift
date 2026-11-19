@@ -63,6 +63,8 @@ extension GameKind {
         case .scorpion: Scorpion.self
         case .bakersDozen: BakersDozen.self
         case .eightOff: EightOff.self
+        case .golf: Golf.self
+        case .triPeaks: TriPeaks.self
         }
     }
 

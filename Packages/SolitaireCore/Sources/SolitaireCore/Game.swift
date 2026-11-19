@@ -8,6 +8,8 @@ public enum GameKind: String, CaseIterable, Codable, Identifiable, Sendable {
     case scorpion
     case bakersDozen = "bakersdozen"
     case eightOff = "eightoff"
+    case golf
+    case triPeaks = "tripeaks"
 
     public var id: String { rawValue }
 }
@@ -64,6 +66,8 @@ public protocol SolitaireGame: Codable, Equatable, Sendable {
     associatedtype Options: GameOptions
 
     static var kind: GameKind { get }
+    /// Whether tapping an empty stock turns the waste back over (Klondike). Default: `true`.
+    static var recyclesWaste: Bool { get }
 
     /// A new deal. The same seed and options always give the same deal.
     init(seed: UInt64, options: Options)
@@ -107,6 +111,8 @@ public protocol SolitaireGame: Codable, Equatable, Sendable {
 }
 
 extension SolitaireGame {
+    public static var recyclesWaste: Bool { true }
+
     public func canPickUp(from pile: Pile, at index: Int) -> Bool {
         let cards = cards(in: pile)
         guard cards.indices.contains(index), cards[index].isFaceUp else { return false }

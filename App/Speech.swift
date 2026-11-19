@@ -87,7 +87,7 @@ enum Speech {
             stock.isEmpty ? String(localized: "Reserve empty") : String(localized: "Deal the reserve")
         } else if !stock.isEmpty {
             String(localized: "Draw card, \(stock.count) left")
-        } else if !game.cards(in: .waste).isEmpty {
+        } else if type(of: game).recyclesWaste, !game.cards(in: .waste).isEmpty {
             String(localized: "Turn the waste over")
         } else {
             String(localized: "Stock empty")
@@ -109,6 +109,9 @@ enum Speech {
         var result: [AccessibleMove] = []
         if let foundation = game.foundationDestination(from: pile, at: index) {
             result.append(AccessibleMove(name: String(localized: "Move to foundation"), destination: foundation))
+        }
+        if pile != .waste, game.canMove(from: pile, at: index, to: .waste) {
+            result.append(AccessibleMove(name: String(localized: "Move to waste"), destination: .waste))
         }
         if !pile.isCell, let cell = game.piles.first(where: { $0.isCell && game.canMove(from: pile, at: index, to: $0) }) {
             result.append(AccessibleMove(name: String(localized: "Move to \(game.spokenName(of: cell))"), destination: cell))
@@ -133,6 +136,7 @@ enum Speech {
     private static func place(_ pile: Pile, in game: some PlayableGame) -> String {
         switch pile {
         case .tableau, .cell: game.spokenName(of: pile)
+        case .waste: String(localized: "waste")
         default: String(localized: "foundation")
         }
     }

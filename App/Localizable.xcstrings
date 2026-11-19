@@ -1635,6 +1635,40 @@
         }
       }
     },
+    "Golf": {
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Golfe"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Golfe"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Golf"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Golf"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Golf"
+          }
+        }
+      }
+    },
     "Haptics": {
       "localizations": {
         "pt-PT": {
@@ -2179,6 +2213,40 @@
         }
       }
     },
+    "Move to waste": {
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mover para o descarte"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mover para o descarte"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mover al descarte"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Déplacer vers la défausse"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf Abwurfstapel legen"
+          }
+        }
+      }
+    },
     "Moves: %lld": {
       "localizations": {
         "pt-PT": {
@@ -2583,6 +2651,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Unser Versprechen"
+          }
+        }
+      }
+    },
+    "Peak %lld, row %lld": {
+      "comment": "TriPeaks position: which of the three peaks and which row from the top",
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pico %1$lld, fila %2$lld"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pico %1$lld, linha %2$lld"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pico %1$lld, fila %2$lld"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pic %1$lld, rangée %2$lld"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gipfel %1$lld, Reihe %2$lld"
           }
         }
       }
@@ -3719,6 +3822,41 @@
         }
       }
     },
+    "waste": {
+      "comment": "Spoken destination after a move: '<card> moved to the waste pile' (Golf, TriPeaks)",
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "a pilha de descarte"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "a pilha de descarte"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "la pila de descarte"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "la défausse"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "den Abwurfstapel"
+          }
+        }
+      }
+    },
     "Waste turned over": {
       "localizations": {
         "pt-PT": {
@@ -3919,6 +4057,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Funktioniert offline: Nichts verlässt dein Gerät"
+          }
+        }
+      }
+    },
+    "Wrap King and Ace": {
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rei e Ás em ciclo"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rei e Ás em ciclo"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rey y As en círculo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Roi et As consécutifs"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "König und Ass verbinden"
           }
         }
       }

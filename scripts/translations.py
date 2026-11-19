@@ -73,6 +73,11 @@ T = {
     "Deal the reserve": pt("Distribuir a reserva", "Repartir la reserva", "Distribuer la réserve", "Reserve austeilen"),
     "Reserve empty": pt("Reserva vazia", "Reserva vacía", "Réserve vide", "Reserve leer"),
     "Reserve dealt": pt("Reserva distribuída", "Reserva repartida", "Réserve distribuée", "Reserve ausgeteilt"),
+    "Golf": pt("Golfe", "Golf", "Golf", "Golf"),
+    "Wrap King and Ace": pt("Rei e Ás em ciclo", "Rey y As en círculo", "Roi et As consécutifs", "König und Ass verbinden"),
+    "Move to waste": pt("Mover para o descarte", "Mover al descarte", "Déplacer vers la défausse", "Auf Abwurfstapel legen"),
+    "waste": pt("a pilha de descarte", "la pila de descarte", "la défausse", "den Abwurfstapel"),
+    "Peak %lld, row %lld": pt("Pico %1$lld, fila %2$lld", "Pico %1$lld, fila %2$lld", "Pic %1$lld, rangée %2$lld", "Gipfel %1$lld, Reihe %2$lld", br="Pico %1$lld, linha %2$lld"),
     "Waste, %@": pt("Descarte, %@", "Descarte, %@", "Défausse, %@", "Abwurfstapel, %@"),
     "Foundation, %@": pt("Base, %@", "Fundación, %@", "Fondation, %@", "Zielstapel, %@"),
     "Empty foundation": pt("Base vazia", "Fundación vacía", "Fondation vide", "Leerer Zielstapel"),
@@ -210,6 +215,8 @@ COMMENTS = {
     "foundation": "Spoken destination after a move: '<card> moved to foundation'",
     "Deal": "Picker label: draw 1 or draw 3",
     "%@: %@": "A rule option and its value, e.g. Recycle the waste: Twice",
+    "waste": "Spoken destination after a move: '<card> moved to the waste pile' (Golf, TriPeaks)",
+    "Peak %lld, row %lld": "TriPeaks position: which of the three peaks and which row from the top",
     "Free cell %lld": "A free cell, where one card can wait (FreeCell)",
 }
 

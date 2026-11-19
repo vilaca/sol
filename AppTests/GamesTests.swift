@@ -32,8 +32,8 @@ final class GamesTests: XCTestCase {
     // MARK: - New menu
 
     func testNewMenuListsEveryGameAndVariant() {
-        XCTAssertEqual(GameChoice.all.map(\.id), ["new-klondike.draw-1", "new-klondike.draw-3", "new-freecell", "new-yukon", "new-scorpion", "new-bakersdozen", "new-eightoff"])
-        XCTAssertEqual(GameChoice.all.map(\.title), ["Klondike – Draw 1", "Klondike – Draw 3", "FreeCell", "Yukon", "Scorpion", "Baker's Dozen", "Eight Off"])
+        XCTAssertEqual(GameChoice.all.map(\.id), ["new-klondike.draw-1", "new-klondike.draw-3", "new-freecell", "new-yukon", "new-scorpion", "new-bakersdozen", "new-eightoff", "new-golf", "new-tripeaks"])
+        XCTAssertEqual(GameChoice.all.map(\.title), ["Klondike – Draw 1", "Klondike – Draw 3", "FreeCell", "Yukon", "Scorpion", "Baker's Dozen", "Eight Off", "Golf", "TriPeaks"])
     }
 
     func testStatisticsKeysNameTheGameAndItsOptions() {
@@ -48,6 +48,15 @@ final class GamesTests: XCTestCase {
         anyCard.anyCardInEmptyColumn = true
         XCTAssertEqual(AnyGame(EightOff(seed: 1, options: anyCard)).statisticsKey, "eightoff.empty-any")
         XCTAssertEqual(EightOff.title(for: anyCard), "Eight Off – Empty columns: Any card")
+        XCTAssertEqual(AnyGame(Golf(seed: 1)).statisticsKey, "golf.wrap-off")
+        var golfWrap = GolfOptions()
+        golfWrap.wrapsKingAndAce = true
+        XCTAssertEqual(AnyGame(Golf(seed: 1, options: golfWrap)).statisticsKey, "golf.wrap-on")
+        XCTAssertEqual(Golf.title(for: golfWrap), "Golf – Wrap King and Ace: On")
+        XCTAssertEqual(AnyGame(TriPeaks(seed: 1)).statisticsKey, "tripeaks.wrap-on")
+        var triNoWrap = TriPeaksOptions()
+        triNoWrap.wrapsKingAndAce = false
+        XCTAssertEqual(AnyGame(TriPeaks(seed: 1, options: triNoWrap)).statisticsKey, "tripeaks.wrap-off")
         XCTAssertEqual(Klondike.title(for: KlondikeOptions(drawCount: 3)), "Klondike – Draw 3")
     }
 
@@ -237,5 +246,51 @@ final class GamesTests: XCTestCase {
         let layout = BoardLayout(size: size, board: BakersDozen(seed: 1).board)
         XCTAssertEqual(layout.pile(at: layout.slotCenter(.tableau(12))), .tableau(12))
         XCTAssertEqual(layout.pile(at: layout.slotCenter(.tableau(6))), .tableau(6))
+    }
+
+    // MARK: - Golf and TriPeaks
+
+    func testGolfAndTriPeaksLabelsAndMoves() {
+        // Seed 42 Golf: waste 2 of hearts; column 2 ends in the 3 of spades, which fits.
+        let golf = Golf(seed: 42)
+        XCTAssertEqual(Speech.label(for: golf.cards(in: .tableau(1)).last!, in: .tableau(1), at: 4, of: golf), "Column 2, 3 of spades")
+        XCTAssertEqual(Speech.moves(from: .tableau(1), at: 4, in: golf).map(\.name), ["Move to waste"])
+        XCTAssertEqual(Speech.stockLabel(golf), "Draw card, 16 left")
+        var empty = golf
+        while empty.draw() {}
+        XCTAssertEqual(Speech.stockLabel(empty), "Stock empty", "no redeal, so no 'Turn the waste over'")
+
+        // Seed 42 TriPeaks: position 26 is the 7 of diamonds, a free card in the bottom row of the third peak.
+        let peaks = TriPeaks(seed: 42)
+        XCTAssertEqual(peaks.spokenName(of: .tableau(26)), "Peak 3, row 4")
+        XCTAssertEqual(peaks.spokenName(of: .tableau(0)), "Peak 1, row 1")
+        XCTAssertEqual(Speech.label(for: peaks.cards(in: .tableau(26))[0], in: .tableau(26), at: 0, of: peaks), "Peak 3, row 4, 7 of diamonds")
+        XCTAssertEqual(Speech.moves(from: .tableau(26), at: 0, in: peaks).map(\.name), ["Move to waste"])
+        var after = peaks
+        after.move(from: .tableau(26), at: 0, to: .waste)
+        XCTAssertEqual(Speech.moved(peaks.cards(in: .tableau(26))[0], to: .waste, before: peaks, after: after, from: .tableau(26)), "7 of diamonds moved to waste")
+    }
+
+    func testTriPeaksFitsAPhoneAndOverlapsByHalfACard() {
+        let size = CGSize(width: 390, height: 700)
+        let board = TriPeaks(seed: 1).board
+        let layout = BoardLayout(size: size, board: board)
+        for spot in board.spots {
+            let center = layout.slotCenter(spot.pile)
+            XCTAssertGreaterThanOrEqual(center.x - layout.cardSize.width / 2, 0)
+            XCTAssertLessThanOrEqual(center.x + layout.cardSize.width / 2, size.width)
+        }
+        // A card sits half a card width between the two below it, and rows are half a card apart.
+        let top = layout.slotCenter(.tableau(0))
+        let left = layout.slotCenter(.tableau(3))
+        let right = layout.slotCenter(.tableau(4))
+        XCTAssertEqual(top.x, (left.x + right.x) / 2, accuracy: 0.01)
+        XCTAssertLessThan(left.y - top.y, layout.cardSize.height)
+        // The waste is the only place a card can be dropped.
+        XCTAssertEqual(layout.pile(at: layout.slotCenter(.waste)), .waste)
+        XCTAssertNil(layout.pile(at: layout.slotCenter(.tableau(20))))
+        let golf = BoardLayout(size: size, board: Golf(seed: 1).board)
+        XCTAssertEqual(golf.pile(at: golf.slotCenter(.waste)), .waste)
+        XCTAssertNil(golf.pile(at: golf.slotCenter(.tableau(2))))
     }
 }

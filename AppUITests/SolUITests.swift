@@ -247,6 +247,49 @@ final class SolUITests: XCTestCase {
         add(screenshot)
     }
 
+    // MARK: - Golf
+
+    /// Seed 42 deals Golf with the 2 of hearts on the waste and the 3 of spades (card 2) on top of column 2.
+    func testGolfDealMoveAndUndo() {
+        tapMenu("newGame")
+        app.buttons["new-golf"].tap()
+        XCTAssertTrue(app.buttons["Waste, 2 of hearts"].waitForExistence(timeout: 5))
+        XCTAssertEqual(moves.label, "Moves: 0")
+
+        app.buttons["card-2"].tap()
+        XCTAssertEqual(moves.label, "Moves: 1")
+        XCTAssertTrue(app.buttons["Waste, 3 of spades"].waitForExistence(timeout: 2))
+
+        app.buttons["undo"].tap()
+        XCTAssertEqual(moves.label, "Moves: 0")
+        let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        screenshot.name = "Golf"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+    }
+
+    // MARK: - TriPeaks
+
+    /// Seed 42 deals TriPeaks with the 8 of spades (card 7) on the waste; the 7 of diamonds (card 32) is free.
+    func testTriPeaksDealMoveAndUndo() {
+        tapMenu("newGame")
+        app.buttons["new-tripeaks"].tap()
+        XCTAssertTrue(app.buttons["Peak 3, row 4, 7 of diamonds"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["Peak 1, row 1"].exists, "covered cards are not read")
+        XCTAssertEqual(moves.label, "Moves: 0")
+
+        app.buttons["card-32"].tap()
+        XCTAssertEqual(moves.label, "Moves: 1")
+        XCTAssertTrue(app.buttons["Waste, 7 of diamonds"].waitForExistence(timeout: 2))
+
+        app.buttons["undo"].tap()
+        XCTAssertEqual(moves.label, "Moves: 0")
+        let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        screenshot.name = "TriPeaks"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+    }
+
     // MARK: - VoiceOver
 
     func testVoiceOverLabelsSayWhereCardsAre() {
