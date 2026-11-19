@@ -25,7 +25,7 @@ See [PRIVACY.md](PRIVACY.md).
 | `Config/*.xcconfig` | Build configurations and signing |
 | `scripts/`, `Makefile` | Simulator, device, test and icon tooling |
 | `fastlane/` | Dev IPA, TestFlight and App Store uploads |
-| `.github/workflows/` | CI tests on every push; release uploads on `v*` tags |
+| `.github/workflows/` | CI tests on every push; nightly tests on other iOS versions, devices and Xcodes; release uploads on `v*` tags |
 
 ## Getting started
 
