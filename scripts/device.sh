@@ -10,7 +10,7 @@
 #   2. Connect the iPhone by cable, unlock it and tap "Trust".
 #   3. iOS 16+: Settings > Privacy & Security > Developer Mode > On (the phone restarts).
 #   4. After the first install with a free Apple ID: Settings > General > VPN & Device Management > trust your profile.
-# iOS 17+ devices install with `devicectl`; older ones (iOS 15/16) need `ios-deploy` (brew install ios-deploy).
+# iOS 17+ devices install with `devicectl`; older ones (iOS 16) need `ios-deploy` (brew install ios-deploy).
 source "$(dirname "$0")/common.sh"
 
 pick_device() {

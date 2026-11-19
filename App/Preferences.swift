@@ -1,9 +1,11 @@
 import UIKit
 
-/// UserDefaults keys for the settings sheet. Read with `@AppStorage` in views; every default is `true`.
+/// UserDefaults keys read with `@AppStorage` in views. The settings (`all`) default to `true`.
 enum PreferenceKey {
     static let haptics = "haptics"
     static let showTimer = "showTimer"
+    /// The About page has been shown as a welcome on first launch.
+    static let hasSeenWelcome = "hasSeenWelcome"
 
     static let all = [haptics, showTimer]
 }

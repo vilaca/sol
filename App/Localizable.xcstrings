@@ -363,6 +363,40 @@
         }
       }
     },
+    "100% free: no pay to play, no pay to win": {
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "100% grátis: sem pagar para jogar nem para ganhar"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "100% grátis: sem pagar para jogar nem para ganhar"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "100% gratis: sin pagar por jugar ni por ganar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "100 % gratuit : rien à payer pour jouer ni pour gagner"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "100 % kostenlos: kein Pay-to-Play, kein Pay-to-Win"
+          }
+        }
+      }
+    },
     "Abandon and Deal": {
       "localizations": {
         "pt-PT": {
@@ -427,6 +461,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dieses Spiel aufgeben?"
+          }
+        }
+      }
+    },
+    "About": {
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acerca de"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobre"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acerca de"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "À propos"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Über"
+          }
+        }
+      }
+    },
+    "About Sol…": {
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acerca do Sol…"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobre o Sol…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acerca de Sol…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "À propos de Sol…"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Über Sol…"
           }
         }
       }
@@ -1633,6 +1735,40 @@
         }
       }
     },
+    "Klondike solitaire, free for everyone.": {
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paciência Klondike, grátis para todos."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paciência Klondike, grátis para todos."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solitario Klondike, gratis para todos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le solitaire Klondike, gratuit pour tous."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Klondike-Solitaire, kostenlos für alle."
+          }
+        }
+      }
+    },
     "More": {
       "localizations": {
         "pt-PT": {
@@ -1939,6 +2075,74 @@
         }
       }
     },
+    "No ads": {
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem publicidade"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem anúncios"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin anuncios"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune publicité"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Werbung"
+          }
+        }
+      }
+    },
+    "No in-app purchases": {
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem compras na app"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem compras no app"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin compras dentro de la app"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun achat intégré"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine In-App-Käufe"
+          }
+        }
+      }
+    },
     "No moves left": {
       "localizations": {
         "pt-PT": {
@@ -1973,6 +2177,40 @@
         }
       }
     },
+    "No tracking, no analytics, no account": {
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem rastreio, sem análise de utilização, sem conta"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem rastreamento, sem análise de uso, sem conta"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin rastreo, sin analíticas, sin cuenta"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun pistage, aucune analyse, aucun compte"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kein Tracking, keine Analyse, kein Konto"
+          }
+        }
+      }
+    },
     "Not allowed": {
       "localizations": {
         "pt-PT": {
@@ -2003,6 +2241,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nicht erlaubt"
+          }
+        }
+      }
+    },
+    "Our promise": {
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A nossa promessa"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nossa promessa"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nuestra promesa"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notre promesse"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unser Versprechen"
+          }
+        }
+      }
+    },
+    "Play": {
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jogar"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jogar"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jugar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jouer"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spielen"
           }
         }
       }
@@ -2071,6 +2377,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Gespielt"
+          }
+        }
+      }
+    },
+    "Privacy policy": {
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Política de privacidade"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Política de privacidade"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Política de privacidad"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Politique de confidentialité"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datenschutzerklärung"
           }
         }
       }
@@ -2343,6 +2683,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "Timer anzeigen"
+          }
+        }
+      }
+    },
+    "Sol is open source under the MIT license: anyone can read the code, check these promises and help improve it.": {
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O Sol é código aberto, com licença MIT: qualquer pessoa pode ler o código, confirmar estas promessas e ajudar a melhorá-lo."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O Sol é de código aberto, sob a licença MIT: qualquer pessoa pode ler o código, conferir estas promessas e ajudar a melhorá-lo."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sol es de código abierto con licencia MIT: cualquiera puede leer el código, comprobar estas promesas y ayudar a mejorarlo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sol est open source sous licence MIT : chacun peut lire le code, vérifier ces promesses et aider à l’améliorer."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sol ist Open Source unter der MIT-Lizenz: Jeder kann den Code lesen, diese Versprechen prüfen und mithelfen, ihn zu verbessern."
+          }
+        }
+      }
+    },
+    "Source code on GitHub": {
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Código-fonte no GitHub"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Código-fonte no GitHub"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Código fuente en GitHub"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Code source sur GitHub"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quellcode auf GitHub"
           }
         }
       }
@@ -2799,6 +3207,40 @@
         }
       }
     },
+    "Version %@": {
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versão %@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versão %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versión %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version %@"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version %@"
+          }
+        }
+      }
+    },
     "Waste turned over": {
       "localizations": {
         "pt-PT": {
@@ -2867,6 +3309,40 @@
         }
       }
     },
+    "Welcome to Sol": {
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boas-vindas ao Sol"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boas-vindas ao Sol"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Te damos la bienvenida a Sol"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bienvenue dans Sol"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Willkommen bei Sol"
+          }
+        }
+      }
+    },
     "Win rate": {
       "localizations": {
         "pt-PT": {
@@ -2931,6 +3407,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Gewonnen"
+          }
+        }
+      }
+    },
+    "Works offline: nothing leaves your device": {
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Funciona sem internet: nada sai do seu dispositivo"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Funciona offline: nada sai do seu aparelho"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Funciona sin conexión: nada sale de tu dispositivo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fonctionne hors ligne : rien ne quitte votre appareil"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Funktioniert offline: Nichts verlässt dein Gerät"
           }
         }
       }

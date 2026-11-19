@@ -2,7 +2,9 @@ import SwiftUI
 
 /// The sheets opened from the toolbar's ⋯ menu.
 enum MenuSheet: String, Identifiable {
-    case statistics, settings
+    case statistics, settings, about
+    /// The About page, shown once on first launch.
+    case welcome
     var id: String { rawValue }
 }
 
@@ -20,7 +22,7 @@ struct StatisticsView: View {
     private var stats: ModeStatistics { model.statistics[drawCount: drawCount] }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section {
                     Picker("Deal", selection: $drawCount) {
@@ -61,7 +63,6 @@ struct StatisticsView: View {
                 Text("This clears the Draw 1 and Draw 3 statistics. It can't be undone.")
             }
         }
-        .navigationViewStyle(.stack)
     }
 
     /// `nil` shows a dash: nothing recorded yet.
@@ -84,7 +85,7 @@ struct SettingsView: View {
     @AppStorage(PreferenceKey.showTimer) private var showTimer = true
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section {
                     Toggle("Haptics", isOn: $haptics)
@@ -109,6 +110,70 @@ struct SettingsView: View {
                 }
             }
         }
-        .navigationViewStyle(.stack)
+    }
+}
+
+/// What Sol promises, with links to the code and the privacy policy. Also shown once, on first launch.
+struct AboutView: View {
+    /// First launch: titled as a welcome, closed with Play.
+    var isWelcome = false
+    @Environment(\.dismiss) private var dismiss
+
+    static let repository = URL(string: "https://github.com/vilaca/sol")!
+    static let privacyPolicy = URL(string: "https://github.com/vilaca/sol/blob/main/PRIVACY.md")!
+
+    private var version: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
+    }
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    VStack(spacing: 8) {
+                        Image(systemName: "sun.max.fill")
+                            .font(.system(size: 44))
+                            .foregroundColor(Color(red: 1, green: 0.8, blue: 0.35))
+                            .frame(width: 84, height: 84)
+                            .background(Circle().fill(Color(red: 0.07, green: 0.17, blue: 0.4)))
+                            .accessibilityHidden(true)
+                        Text(verbatim: "Sol").font(.largeTitle.bold())
+                        Text("Klondike solitaire, free for everyone.")
+                            .multilineTextAlignment(.center)
+                        Text("Version \(version)")
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                }
+                Section("Our promise") {
+                    Label("100% free: no pay to play, no pay to win", systemImage: "gift")
+                    Label("No ads", systemImage: "nosign")
+                    Label("No in-app purchases", systemImage: "cart.badge.minus")
+                    Label("No tracking, no analytics, no account", systemImage: "eye.slash")
+                    Label("Works offline: nothing leaves your device", systemImage: "wifi.slash")
+                }
+                Section {
+                    Link(destination: Self.repository) {
+                        Label("Source code on GitHub", systemImage: "chevron.left.forwardslash.chevron.right")
+                    }
+                    .accessibilityIdentifier("repositoryLink")
+                    Link(destination: Self.privacyPolicy) {
+                        Label("Privacy policy", systemImage: "hand.raised")
+                    }
+                } footer: {
+                    Text("Sol is open source under the MIT license: anyone can read the code, check these promises and help improve it.")
+                }
+            }
+            .navigationTitle(isWelcome ? Text("Welcome to Sol") : Text("About"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button { dismiss() } label: { isWelcome ? Text("Play") : Text("Done") }
+                        .accessibilityIdentifier("done")
+                }
+            }
+        }
     }
 }

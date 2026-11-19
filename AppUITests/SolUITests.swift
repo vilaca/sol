@@ -112,6 +112,15 @@ final class SolUITests: XCTestCase {
         XCTAssertEqual(moves.label, "Moves: 0")
     }
 
+    func testAboutSaysItIsFreeAndLinksToTheCode() {
+        openMenu("about")
+        XCTAssertTrue(app.staticTexts["100% free: no pay to play, no pay to win"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["No ads"].exists)
+        XCTAssertTrue(app.links["repositoryLink"].exists)
+        app.buttons["done"].tap()
+        XCTAssertTrue(stock.waitForExistence(timeout: 2))
+    }
+
     func testGameSurvivesRelaunch() {
         stock.tap()
         app.terminate()

@@ -2,11 +2,11 @@
 # Builds the Dev app, installs it on an iOS Simulator and launches it.
 #
 #   scripts/simulator.sh                 # iPhone 13 on the newest installed iOS runtime
-#   SIM_DEVICE="iPhone SE (2nd generation)" SIM_RUNTIME=15 scripts/simulator.sh
+#   SIM_DEVICE="iPhone SE (2nd generation)" SIM_RUNTIME=16 scripts/simulator.sh
 #   scripts/simulator.sh --destination   # only print the xcodebuild destination (used by the test scripts)
 #
 # A simulator named "Sol - <device> - iOS <version>" is created on first use.
-# Older runtimes (e.g. iOS 15, the minimum we support) come from Xcode > Settings > Components.
+# Older runtimes (e.g. iOS 16, the minimum we support) come from Xcode > Settings > Components.
 source "$(dirname "$0")/common.sh"
 
 DEVICE_NAME="${SIM_DEVICE:-iPhone 13}"

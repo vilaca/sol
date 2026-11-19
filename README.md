@@ -10,7 +10,7 @@ See [PRIVACY.md](PRIVACY.md).
 - Playable with VoiceOver: every card says where it is, and the Actions rotor offers each legal move.
 - In English, Portuguese (Portugal and Brazil), Spanish, French and German.
 - The game in progress is saved on the device and restored on the next launch.
-- Runs on **iOS 15 and later**: iPhone 6s, SE (1st gen) and every newer iPhone in portrait, and iPad in any orientation.
+- Runs on **iOS 16 and later**: iPhone 8, X, SE (2nd gen) and every newer iPhone in portrait, and iPad in any orientation.
 
 ## Layout
 
@@ -53,7 +53,7 @@ Dev and release builds have different bundle ids, so both can be installed on th
 ```sh
 make test-core     # game rules, on the Mac
 make test-app      # app unit + UI tests, iPhone 13 simulator, newest iOS
-make test-oldest   # same on an iPhone 8 simulator with iOS 15, the oldest supported
+make test-oldest   # same on an iPhone 8 simulator with iOS 16, the oldest supported
 make test-device   # same on a connected iPhone
 ```
 
@@ -75,7 +75,7 @@ Test results, including screenshots and code coverage, are saved in `.build/Test
 4. `make device`. On the first install, trust the developer profile on the phone under
    **Settings → General → VPN & Device Management**.
 
-iPhones on iOS 17 or later install through `xcrun devicectl`. Older ones (iOS 15 and 16) install through
+iPhones on iOS 17 or later install through `xcrun devicectl`. Older ones (iOS 16) install through
 `ios-deploy`. Once the phone has been paired by cable, Xcode can also install over Wi-Fi.
 
 To give a build to testers without TestFlight, register their iPhones in your developer account, then run

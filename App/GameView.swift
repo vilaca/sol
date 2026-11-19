@@ -29,6 +29,7 @@ struct GameView: View {
     /// "No moves left" was shown for the current dead end; asked again only after a way out appeared.
     @State private var warnedNoMoves = false
     @AppStorage(PreferenceKey.showTimer) private var showTimer = true
+    @AppStorage(PreferenceKey.hasSeenWelcome) private var hasSeenWelcome = false
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
@@ -49,6 +50,14 @@ struct GameView: View {
             switch sheet {
             case .statistics: StatisticsView(model: model)
             case .settings: SettingsView(model: model)
+            case .about: AboutView()
+            case .welcome: AboutView(isWelcome: true)
+            }
+        }
+        .onAppear {
+            if !hasSeenWelcome {
+                hasSeenWelcome = true
+                sheet = .welcome
             }
         }
         // `onChange` closures see the view as it was before the change, so pass the new value in.
@@ -361,6 +370,10 @@ struct GameView: View {
                     Label("Settings…", systemImage: "gearshape")
                 }
                 .accessibilityIdentifier("settings")
+                Button { sheet = .about } label: {
+                    Label("About Sol…", systemImage: "info.circle")
+                }
+                .accessibilityIdentifier("about")
             } label: {
                 Label("More", systemImage: "ellipsis.circle")
                     .labelStyle(.iconOnly)
@@ -434,28 +447,17 @@ private struct ToolbarLabels: ViewModifier {
     }
 }
 
-/// VoiceOver's "Move to foundation" / "Move to column N" actions.
+/// VoiceOver's "Move to foundation" / "Move to column N" actions. Built with `ForEach`, so the view keeps
+/// its identity as the number of moves changes (chaining modifiers through `AnyView` made cards flicker).
 private struct AccessibleMoves: ViewModifier {
     let moves: [AccessibleMove]
     let perform: (AccessibleMove) -> Void
-    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
 
     func body(content: Content) -> some View {
-        if #available(iOS 16, *) {
-            content.accessibilityActions {
-                ForEach(moves, id: \.name) { move in
-                    Button(move.name) { perform(move) }
-                }
+        content.accessibilityActions {
+            ForEach(moves, id: \.name) { move in
+                Button(move.name) { perform(move) }
             }
-        } else if voiceOverEnabled {
-            // iOS 15 has no builder for a varying number of actions, so they are chained. The chain's type
-            // changes with the number of moves, which makes SwiftUI rebuild the card (a visible flicker
-            // when it moves), so it is only built while VoiceOver is on.
-            moves.reduce(AnyView(content)) { view, move in
-                AnyView(view.accessibilityAction(named: Text(move.name)) { perform(move) })
-            }
-        } else {
-            content
         }
     }
 }

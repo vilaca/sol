@@ -2,7 +2,7 @@
 name: Sol
 options:
   deploymentTarget:
-    iOS: "15.0"
+    iOS: "16.0"
   createIntermediateGroups: true
   developmentLanguage: en
 

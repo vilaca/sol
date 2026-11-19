@@ -17,14 +17,14 @@ test-core: ## Game-rule unit tests on the Mac (fast, no simulator)
 test-app: ## App unit + UI tests on an iPhone 13 simulator
 	scripts/test-app.sh
 
-test-oldest: ## App tests on the oldest supported iOS (15) — install that runtime first
-	SIM_DEVICE="iPhone 8" SIM_RUNTIME=15 scripts/test-app.sh
+test-oldest: ## App tests on the oldest supported iOS (16) — install that runtime first
+	SIM_DEVICE="iPhone 8" SIM_RUNTIME=16 scripts/test-app.sh
 
 sim: ## Build and run the Dev app on an iPhone 13 simulator
 	scripts/simulator.sh
 
-sim-oldest: ## Build and run on an iPhone 8 simulator with iOS 15
-	SIM_DEVICE="iPhone 8" SIM_RUNTIME=15 scripts/simulator.sh
+sim-oldest: ## Build and run on an iPhone 8 simulator with iOS 16
+	SIM_DEVICE="iPhone 8" SIM_RUNTIME=16 scripts/simulator.sh
 
 device: ## Build, install and launch the Dev app on a connected iPhone
 	scripts/device.sh

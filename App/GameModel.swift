@@ -67,6 +67,8 @@ final class GameModel: ObservableObject {
             for key in [Self.saveKey, Self.clockKey, Self.drawCountKey, Self.statisticsKey] + PreferenceKey.all {
                 defaults.removeObject(forKey: key)
             }
+            // A clean slate for tests, so they start on the board rather than on the welcome page.
+            defaults.set(true, forKey: PreferenceKey.hasSeenWelcome)
         }
         statistics = defaults.data(forKey: Self.statisticsKey).flatMap { try? JSONDecoder().decode(Statistics.self, from: $0) } ?? Statistics()
         let drawCount = defaults.integer(forKey: Self.drawCountKey) == 3 ? 3 : 1

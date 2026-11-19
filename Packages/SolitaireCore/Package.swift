@@ -3,8 +3,8 @@ import PackageDescription
 
 let package = Package(
     name: "SolitaireCore",
-    // iOS 15 runs on iPhone 6s / SE (1st gen) and every later model.
-    platforms: [.iOS(.v15), .macOS(.v13)],
+    // iOS 16 runs on iPhone 8 / X / SE (2nd gen) and every later model.
+    platforms: [.iOS(.v16), .macOS(.v13)],
     products: [
         .library(name: "SolitaireCore", targets: ["SolitaireCore"]),
     ],
