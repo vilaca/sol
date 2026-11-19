@@ -1,0 +1,15 @@
+.DS_Store
+.build/
+dist/
+Sol.xcodeproj/
+xcuserdata/
+*.xcresult
+Packages/SolitaireCore/.swiftpm/
+Config/Signing.local.xcconfig
+vendor/bundle/
+.bundle/
+fastlane/report.xml
+fastlane/README.md
+*.p8
+*.ipa
+*.dSYM.zip

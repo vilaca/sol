@@ -1,0 +1,119 @@
+# Release lanes. Signing is Xcode automatic signing; on CI it authenticates with an App Store Connect API key:
+#   ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8 (contents of the .p8 file), DEVELOPMENT_TEAM, APP_BUNDLE_ID
+# Locally, `fastlane beta` / `release` can also use the Apple ID you are signed in with in Xcode.
+default_platform(:ios)
+
+ROOT = File.expand_path("..", __dir__)
+PROJECT = File.join(ROOT, "Sol.xcodeproj")
+DIST = File.join(ROOT, "dist")
+
+# Reads KEY = value from Config/Signing.local.xcconfig, then the environment.
+def setting(key)
+  local = File.join(ROOT, "Config", "Signing.local.xcconfig")
+  if File.exist?(local)
+    line = File.readlines(local).find { |l| l =~ /^\s*#{key}\s*=/ }
+    value = line&.split("=", 2)&.last&.strip
+    return value unless value.nil? || value.empty?
+  end
+  ENV[key]
+end
+
+platform :ios do
+  before_all do
+    sh("cd '#{ROOT}' && xcodegen generate --quiet")
+  end
+
+  private_lane :api_key do
+    next nil unless ENV["ASC_KEY_ID"]
+    app_store_connect_api_key(
+      key_id: ENV["ASC_KEY_ID"],
+      issuer_id: ENV["ASC_ISSUER_ID"],
+      key_content: ENV["ASC_KEY_P8"],
+      in_house: false
+    )
+  end
+
+  # xcodebuild flags for automatic signing, with the API key when we have one (CI).
+  private_lane :signing_args do
+    args = ["-allowProvisioningUpdates"]
+    team = setting("DEVELOPMENT_TEAM")
+    args << "DEVELOPMENT_TEAM=#{team}" if team
+    bundle = setting("APP_BUNDLE_ID")
+    args << "APP_BUNDLE_ID=#{bundle}" if bundle
+    if ENV["ASC_KEY_ID"]
+      key_path = File.join(ROOT, ".build", "AuthKey_#{ENV['ASC_KEY_ID']}.p8")
+      FileUtils.mkdir_p(File.dirname(key_path))
+      File.write(key_path, ENV["ASC_KEY_P8"])
+      args += [
+        "-authenticationKeyPath", key_path,
+        "-authenticationKeyID", ENV["ASC_KEY_ID"],
+        "-authenticationKeyIssuerID", ENV["ASC_ISSUER_ID"]
+      ]
+    end
+    args.join(" ")
+  end
+
+  desc "Run the app unit and UI tests on a simulator"
+  lane :test do
+    sh("'#{ROOT}/scripts/test-app.sh'")
+  end
+
+  desc "Dev release: development-signed IPA (Sol Dev) for iPhones registered in your team"
+  lane :dev do
+    build_app(
+      project: PROJECT,
+      scheme: "Sol",
+      configuration: "Debug",
+      export_method: "development",
+      output_directory: DIST,
+      output_name: "Sol-Dev.ipa",
+      xcargs: signing_args,
+      export_xcargs: "-allowProvisioningUpdates"
+    )
+    UI.success("Install #{DIST}/Sol-Dev.ipa with Xcode > Devices and Simulators, or Apple Configurator")
+  end
+
+  desc "Test release: build with the next build number and upload to TestFlight"
+  lane :beta do
+    key = api_key
+    build_number = latest_testflight_build_number(api_key: key, app_identifier: setting("APP_BUNDLE_ID"), initial_build_number: 0) + 1
+    build_app(
+      project: PROJECT,
+      scheme: "Sol",
+      configuration: "Release",
+      export_method: "app-store",
+      output_directory: DIST,
+      output_name: "Sol.ipa",
+      xcargs: "#{signing_args} CURRENT_PROJECT_VERSION=#{build_number}",
+      export_xcargs: "-allowProvisioningUpdates"
+    )
+    upload_to_testflight(
+      api_key: key,
+      skip_waiting_for_build_processing: true,
+      changelog: ENV["TESTFLIGHT_CHANGELOG"]
+    )
+  end
+
+  desc "Store release: upload a build to App Store Connect. Submitting for review stays a manual step."
+  lane :release do
+    key = api_key
+    build_number = latest_testflight_build_number(api_key: key, app_identifier: setting("APP_BUNDLE_ID"), initial_build_number: 0) + 1
+    build_app(
+      project: PROJECT,
+      scheme: "Sol",
+      configuration: "Release",
+      export_method: "app-store",
+      output_directory: DIST,
+      output_name: "Sol.ipa",
+      xcargs: "#{signing_args} CURRENT_PROJECT_VERSION=#{build_number}",
+      export_xcargs: "-allowProvisioningUpdates"
+    )
+    upload_to_app_store(
+      api_key: key,
+      skip_metadata: true,
+      skip_screenshots: true,
+      submit_for_review: false,
+      precheck_include_in_app_purchases: false
+    )
+  end
+end

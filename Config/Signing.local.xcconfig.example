@@ -1,0 +1,4 @@
+// Copy to Config/Signing.local.xcconfig and fill in. That file is git-ignored.
+// Team ID: https://developer.apple.com/account -> Membership details.
+DEVELOPMENT_TEAM = ABCDE12345
+APP_BUNDLE_ID = com.yourname.sol

@@ -1,0 +1,5 @@
+// Dev builds: simulator, `make device`, and the development IPA.
+#include "Base.xcconfig"
+
+PRODUCT_BUNDLE_IDENTIFIER = $(APP_BUNDLE_ID).dev
+APP_DISPLAY_NAME = Sol Dev

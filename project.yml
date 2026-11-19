@@ -1,0 +1,105 @@
+# XcodeGen spec. Run `make project` (or `xcodegen`) to produce Sol.xcodeproj; the .xcodeproj is not committed.
+name: Sol
+options:
+  deploymentTarget:
+    iOS: "15.0"
+  createIntermediateGroups: true
+  developmentLanguage: en
+
+configs:
+  Debug: debug
+  Release: release
+
+# Debug builds install as "Sol Dev" (bundle id suffix .dev) next to the TestFlight/App Store build.
+configFiles:
+  Debug: Config/Debug.xcconfig
+  Release: Config/Release.xcconfig
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    VERSIONING_SYSTEM: apple-generic
+    CODE_SIGN_STYLE: Automatic
+
+packages:
+  SolitaireCore:
+    path: Packages/SolitaireCore
+
+targets:
+  Sol:
+    type: application
+    platform: iOS
+    sources:
+      - App
+    dependencies:
+      - package: SolitaireCore
+    settings:
+      base:
+        TARGETED_DEVICE_FAMILY: "1,2"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: $(APP_DISPLAY_NAME)
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.card-games
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
+        # iPad: every orientation, so Split View and Slide Over work.
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+        INFOPLIST_KEY_UIStatusBarStyle: UIStatusBarStyleLightContent
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        # Translations live in App/Localizable.xcstrings; the compiler extracts every UI string.
+        LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+        SWIFT_EMIT_LOC_STRINGS: YES
+
+  SolTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - AppTests
+    dependencies:
+      - target: Sol
+      - package: SolitaireCore
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID).tests
+        SWIFT_VERSION: "5.0"
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/Sol.app/Sol
+        BUNDLE_LOADER: $(TEST_HOST)
+
+  SolUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - AppUITests
+    dependencies:
+      - target: Sol
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID).uitests
+        SWIFT_VERSION: "5.0"
+        TEST_TARGET_NAME: Sol
+
+schemes:
+  Sol:
+    build:
+      targets:
+        Sol: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: true
+      coverageTargets:
+        - Sol
+      targets:
+        - SolTests
+        - SolUITests
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

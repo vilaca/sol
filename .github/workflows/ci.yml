@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core:
+    name: Game rules
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift test --package-path Packages/SolitaireCore
+
+  app:
+    name: App unit + UI tests (iPhone 13 simulator)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: brew install xcodegen xcbeautify
+      - run: scripts/test-app.sh
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: TestResults
+          path: .build/TestResults.xcresult
