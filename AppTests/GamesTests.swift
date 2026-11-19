@@ -32,8 +32,8 @@ final class GamesTests: XCTestCase {
     // MARK: - New menu
 
     func testNewMenuListsEveryGameAndVariant() {
-        XCTAssertEqual(GameChoice.all.map(\.id), ["new-klondike.draw-1", "new-klondike.draw-3", "new-freecell", "new-yukon", "new-scorpion"])
-        XCTAssertEqual(GameChoice.all.map(\.title), ["Klondike – Draw 1", "Klondike – Draw 3", "FreeCell", "Yukon", "Scorpion"])
+        XCTAssertEqual(GameChoice.all.map(\.id), ["new-klondike.draw-1", "new-klondike.draw-3", "new-freecell", "new-yukon", "new-scorpion", "new-bakersdozen", "new-eightoff"])
+        XCTAssertEqual(GameChoice.all.map(\.title), ["Klondike – Draw 1", "Klondike – Draw 3", "FreeCell", "Yukon", "Scorpion", "Baker's Dozen", "Eight Off"])
     }
 
     func testStatisticsKeysNameTheGameAndItsOptions() {
@@ -42,6 +42,12 @@ final class GamesTests: XCTestCase {
         XCTAssertEqual(AnyGame(FreeCell(seed: 1)).statisticsKey, "freecell")
         XCTAssertEqual(AnyGame(Yukon(seed: 1)).statisticsKey, "yukon")
         XCTAssertEqual(AnyGame(Scorpion(seed: 1)).statisticsKey, "scorpion")
+        XCTAssertEqual(AnyGame(BakersDozen(seed: 1)).statisticsKey, "bakersdozen")
+        XCTAssertEqual(AnyGame(EightOff(seed: 1)).statisticsKey, "eightoff.empty-kings")
+        var anyCard = EightOffOptions()
+        anyCard.anyCardInEmptyColumn = true
+        XCTAssertEqual(AnyGame(EightOff(seed: 1, options: anyCard)).statisticsKey, "eightoff.empty-any")
+        XCTAssertEqual(EightOff.title(for: anyCard), "Eight Off – Empty columns: Any card")
         XCTAssertEqual(Klondike.title(for: KlondikeOptions(drawCount: 3)), "Klondike – Draw 3")
     }
 
@@ -214,5 +220,22 @@ final class GamesTests: XCTestCase {
         XCTAssertTrue(game.draw())
         XCTAssertEqual(Speech.stockLabel(game), "Reserve empty")
         XCTAssertEqual(Speech.drew(game), "Reserve dealt")
+    }
+
+    // MARK: - Baker's Dozen and Eight Off
+
+    func testBakersDozenAndEightOffFitAPhone() {
+        let size = CGSize(width: 390, height: 700)
+        for board in [BakersDozen(seed: 1).board, EightOff(seed: 1).board] {
+            let layout = BoardLayout(size: size, board: board)
+            for spot in board.spots where spot.pile.isTableau {
+                let center = layout.slotCenter(spot.pile)
+                XCTAssertGreaterThanOrEqual(center.x - layout.cardSize.width / 2, 0)
+                XCTAssertLessThanOrEqual(center.x + layout.cardSize.width / 2, size.width)
+            }
+        }
+        let layout = BoardLayout(size: size, board: BakersDozen(seed: 1).board)
+        XCTAssertEqual(layout.pile(at: layout.slotCenter(.tableau(12))), .tableau(12))
+        XCTAssertEqual(layout.pile(at: layout.slotCenter(.tableau(6))), .tableau(6))
     }
 }

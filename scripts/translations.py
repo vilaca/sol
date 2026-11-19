@@ -197,6 +197,9 @@ T = {
     "Show timer": pt("Mostrar cronómetro", "Mostrar cronómetro", "Afficher le chrono", "Timer anzeigen", br="Mostrar cronômetro"),
     "Off": pt("Desativado", "Desactivado", "Désactivé", "Aus"),
     "On": pt("Ativado", "Activado", "Activé", "Ein"),
+    "Empty columns": pt("Colunas vazias", "Columnas vacías", "Colonnes vides", "Leere Spalten"),
+    "Kings only": pt("Só reis", "Solo reyes", "Rois seulement", "Nur Könige", br="Só reis"),
+    "Any card": pt("Qualquer carta", "Cualquier carta", "N’importe quelle carte", "Jede Karte"),
     "%@: %@": pt("%1$@: %2$@", "%1$@: %2$@", f"%1$@{NB}: %2$@", "%1$@: %2$@"),
     "Applies from the next game.": pt("Aplica-se a partir do próximo jogo.", "Se aplica a partir de la próxima partida.", "S’applique à partir de la prochaine partie.", "Gilt ab dem nächsten Spiel.", br="Vale a partir do próximo jogo."),
 }

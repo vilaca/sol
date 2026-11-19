@@ -203,6 +203,50 @@ final class SolUITests: XCTestCase {
         XCTAssertEqual(moves.label, "Moves: 0")
     }
 
+    // MARK: - Baker's Dozen
+
+    /// Seed 42 deals Baker's Dozen with the ace of clubs (card 39) on top of column 1.
+    func testBakersDozenDealMoveAndUndo() {
+        tapMenu("newGame")
+        app.buttons["new-bakersdozen"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["foundation-0"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Column 1, Ace of clubs"].exists)
+        XCTAssertEqual(moves.label, "Moves: 0")
+
+        app.buttons["card-39"].tap()
+        XCTAssertEqual(moves.label, "Moves: 1")
+        XCTAssertTrue(app.buttons["Foundation, Ace of clubs"].waitForExistence(timeout: 2))
+
+        app.buttons["undo"].tap()
+        XCTAssertEqual(moves.label, "Moves: 0")
+        let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        screenshot.name = "Baker's Dozen"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+    }
+
+    // MARK: - Eight Off
+
+    /// Seed 42 deals Eight Off with the ace of spades (card 0) on top of column 1 and four cards in the free cells.
+    func testEightOffDealMoveAndUndo() {
+        tapMenu("newGame")
+        app.buttons["new-eightoff"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["foundation-0"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Free cell 1, Queen of diamonds"].exists)
+        XCTAssertEqual(moves.label, "Moves: 0")
+
+        app.buttons["card-0"].tap()
+        XCTAssertEqual(moves.label, "Moves: 1")
+        XCTAssertTrue(app.buttons["Foundation, Ace of spades"].waitForExistence(timeout: 2))
+
+        app.buttons["undo"].tap()
+        XCTAssertEqual(moves.label, "Moves: 0")
+        let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        screenshot.name = "Eight Off"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+    }
+
     // MARK: - VoiceOver
 
     func testVoiceOverLabelsSayWhereCardsAre() {

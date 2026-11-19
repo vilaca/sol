@@ -6,6 +6,8 @@ public enum GameKind: String, CaseIterable, Codable, Identifiable, Sendable {
     case freeCell = "freecell"
     case yukon
     case scorpion
+    case bakersDozen = "bakersdozen"
+    case eightOff = "eightoff"
 
     public var id: String { rawValue }
 }

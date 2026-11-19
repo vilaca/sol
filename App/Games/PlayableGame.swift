@@ -61,6 +61,8 @@ extension GameKind {
         case .freeCell: FreeCell.self
         case .yukon: Yukon.self
         case .scorpion: Scorpion.self
+        case .bakersDozen: BakersDozen.self
+        case .eightOff: EightOff.self
         }
     }
 

@@ -72,6 +72,6 @@ import Testing
     @Test func everyKindNamesItsGame() {
         #expect(Klondike.kind == .klondike)
         #expect(FreeCell.kind == .freeCell)
-        #expect(GameKind.allCases.map(\.rawValue) == ["klondike", "freecell", "yukon", "scorpion"])
+        #expect(GameKind.allCases.map(\.rawValue) == ["klondike", "freecell", "yukon", "scorpion", "bakersdozen", "eightoff"])
     }
 }
