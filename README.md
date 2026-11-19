@@ -65,6 +65,21 @@ arguments yourself, e.g. `scripts/simulator.sh -seed 42`.
 
 Test results, including screenshots and code coverage, are saved in `.build/TestResults.xcresult`.
 
+### On GitHub Actions
+
+| Workflow | When | Runner | Xcode | iOS | Device |
+|---|---|---|---|---|---|
+| CI | every push and pull request | macOS 15 | runner default | newest installed | iPhone 13 |
+| Nightly | 03:00 UTC, or **Run workflow** | macOS 15 | 16.4 | 18.5 | iPhone SE (3rd generation) |
+| | | macOS 15 | 16.4 | 18.6 | iPhone 16 Pro Max |
+| | | macOS 15 | 26.0.1 | 26.0 | iPad (A16) |
+| | | macOS 26 | 26.6 | 26.5 | iPhone 17e |
+
+CI also runs the game-rule tests on the Mac. The nightly uses only simulators and Xcodes already installed on [GitHub's runner images](https://github.com/actions/runner-images/tree/main/images/macos).
+None has iOS 16, the oldest supported version, or iOS 17, so test those locally with `make test-oldest`. When an image drops one
+of these versions, its nightly job fails at "Select Xcode" or when creating the simulator; update the matrix in
+`.github/workflows/nightly.yml` and this table.
+
 ## Running on your iPhone
 
 1. `cp Config/Signing.local.xcconfig.example Config/Signing.local.xcconfig` (`make bootstrap` does this) and set

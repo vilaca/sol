@@ -2,7 +2,7 @@
 # older Xcode versions than the push CI. Only simulators and Xcodes already on GitHub's runner images are
 # used, so no job downloads a runtime; see the "Installed Simulators" section of each image's readme:
 # https://github.com/actions/runner-images/tree/main/images/macos
-# No runner image has iOS 16 (the minimum), so 17.0 is the oldest tested here.
+# No runner image has iOS 16 (the minimum) or 17 (macos-14 is retired), so 18.5 is the oldest tested here.
 name: Nightly
 
 on:
@@ -23,7 +23,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { runner: macos-14, xcode: "16.2", ios: "17.0", device: "iPhone SE (3rd generation)" }
+          - { runner: macos-15, xcode: "16.4", ios: "18.5", device: "iPhone SE (3rd generation)" }
           - { runner: macos-15, xcode: "16.4", ios: "18.6", device: "iPhone 16 Pro Max" }
           - { runner: macos-15, xcode: "26.0.1", ios: "26.0", device: "iPad (A16)" }
           - { runner: macos-26, xcode: "26.6", ios: "26.5", device: "iPhone 17e" }
