@@ -116,7 +116,14 @@ final class SolUITests: XCTestCase {
         openMenu("about")
         XCTAssertTrue(app.staticTexts["100% free: no pay to play, no pay to win"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.staticTexts["No ads"].exists)
-        XCTAssertTrue(app.links["repositoryLink"].exists)
+        // A SwiftUI Link is a link on newer runtimes and a button on older ones; the list is lazy, so scroll to it.
+        let link = app.descendants(matching: .any)["repositoryLink"]
+        var swipes = 0
+        while !link.exists && swipes < 3 {
+            app.swipeUp()
+            swipes += 1
+        }
+        XCTAssertTrue(link.exists)
         app.buttons["done"].tap()
         XCTAssertTrue(stock.waitForExistence(timeout: 2))
     }
@@ -347,7 +354,7 @@ final class SolUITests: XCTestCase {
     /// Seed 42 deals Forty Thieves with the ace of diamonds (card 26) on top of column 4.
     func testFortyThievesDealMoveDrawAndUndo() {
         tapMenu("newGame")
-        XCTAssertTrue(app.buttons["new-fortythieves"].waitForExistence(timeout: 5))
+        scrollMenuTo("new-fortythieves")
         app.buttons["new-fortythieves"].tap()
         XCTAssertTrue(app.buttons["Draw card, 64 left"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["Column 4, Ace of diamonds"].exists)
@@ -406,6 +413,20 @@ final class SolUITests: XCTestCase {
         let menu = app.buttons[identifier]
         XCTAssertTrue(menu.waitForExistence(timeout: 5))
         menu.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+    }
+
+    /// The New menu lists every game; on a small screen its last entries sit below the fold until scrolled to.
+    private func scrollMenuTo(_ identifier: String) {
+        let item = app.buttons[identifier]
+        var swipes = 0
+        while !item.waitForExistence(timeout: 2) && swipes < 4 {
+            // Drag an entry that is on screen; which ones are visible depends on the scroll position.
+            let visible = ["new-klondike.draw-1", "new-klondike.draw-3", "new-freecell", "new-yukon"]
+                .map { app.buttons[$0] }.first { $0.exists && $0.isHittable }
+            (visible ?? app.windows.firstMatch).swipeUp()
+            swipes += 1
+        }
+        XCTAssertTrue(item.exists)
     }
 
     private func openMenu(_ item: String) {

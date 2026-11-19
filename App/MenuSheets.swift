@@ -31,7 +31,7 @@ struct StatisticsView: View {
         NavigationStack {
             Form {
                 Section {
-                    Picker("Game", selection: Binding(get: { kind }, set: show)) {
+                    Picker("Game", selection: Binding(get: { kind }, set: { show($0) })) {
                         ForEach(GameKind.allCases) { kind in
                             Text(verbatim: kind.name).tag(kind)
                         }

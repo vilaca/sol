@@ -10,12 +10,10 @@ extension EightOff: PlayableGame {
 
     /// Eight free cells in the top row, the four foundations centred below them, then eight columns.
     var board: BoardSpec {
-        BoardSpec(
-            columns: Self.tableauCount,
-            heightInCards: 6.5,
-            spots: (0..<Self.cellCount).map { PileSpot(.cell($0), x: CGFloat($0), y: 0) }
-                + (0..<Self.foundationCount).map { PileSpot(.foundation($0), x: CGFloat(2 + $0), y: 1, slot: .text("A")) }
-                + (0..<Self.tableauCount).map { PileSpot(.tableau($0), x: CGFloat($0), y: 2, fan: .down) }
-        )
+        var spots: [PileSpot] = []
+        for i in 0..<Self.cellCount { spots.append(PileSpot(.cell(i), x: CGFloat(i), y: 0)) }
+        for i in 0..<Self.foundationCount { spots.append(PileSpot(.foundation(i), x: CGFloat(2 + i), y: 1, slot: .text("A"))) }
+        for i in 0..<Self.tableauCount { spots.append(PileSpot(.tableau(i), x: CGFloat(i), y: 2, fan: .down)) }
+        return BoardSpec(columns: Self.tableauCount, heightInCards: 6.5, spots: spots)
     }
 }
