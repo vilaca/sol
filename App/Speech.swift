@@ -82,7 +82,10 @@ enum Speech {
 
     static func stockLabel(_ game: some SolitaireGame) -> String {
         let stock = game.cards(in: .stock)
-        return if !stock.isEmpty {
+        return if !game.piles.contains(.waste) {
+            // A reserve, not a stock: Scorpion deals it onto the columns.
+            stock.isEmpty ? String(localized: "Reserve empty") : String(localized: "Deal the reserve")
+        } else if !stock.isEmpty {
             String(localized: "Draw card, \(stock.count) left")
         } else if !game.cards(in: .waste).isEmpty {
             String(localized: "Turn the waste over")
@@ -135,7 +138,9 @@ enum Speech {
     }
 
     static func drew(_ game: some SolitaireGame) -> String {
-        if let top = game.cards(in: .waste).last {
+        if !game.piles.contains(.waste) {
+            String(localized: "Reserve dealt")
+        } else if let top = game.cards(in: .waste).last {
             String(localized: "Drew \(top.spokenName)")
         } else {
             String(localized: "Waste turned over")
@@ -149,6 +154,7 @@ enum Speech {
             let card = game.cards(in: move.from)[move.index]
             return String(localized: "Hint: move \(card.spokenName) to \(place(move.to, in: game))")
         case .draw:
+            if !game.piles.contains(.waste) { return String(localized: "Hint: deal the reserve") }
             return game.cards(in: .stock).isEmpty ? String(localized: "Hint: turn the waste over") : String(localized: "Hint: draw a card")
         case nil:
             return noMovesLeft

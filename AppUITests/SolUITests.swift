@@ -154,6 +154,55 @@ final class SolUITests: XCTestCase {
         add(screenshot)
     }
 
+    // MARK: - Yukon
+
+    /// Seed 42 deals Yukon with the 10 of spades (card 9) alone in column 1 and the jack of hearts (card 23) on column 3.
+    func testYukonDealMoveAndUndo() {
+        tapMenu("newGame")
+        app.buttons["new-yukon"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["foundation-0"].waitForExistence(timeout: 5))
+        XCTAssertFalse(stock.exists, "Yukon has no stock")
+        XCTAssertTrue(app.buttons["Column 1, 10 of spades"].exists)
+        XCTAssertEqual(moves.label, "Moves: 0")
+
+        app.buttons["card-9"].tap()
+        XCTAssertEqual(moves.label, "Moves: 1")
+        XCTAssertTrue(app.buttons["Column 3, 10 of spades"].waitForExistence(timeout: 2), "onto the jack of hearts")
+
+        app.buttons["undo"].tap()
+        XCTAssertEqual(moves.label, "Moves: 0")
+        let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        screenshot.name = "Yukon"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+    }
+
+    // MARK: - Scorpion
+
+    /// Seed 42 deals Scorpion with the jack of hearts (card 23) on column 2 and the queen of hearts on column 3.
+    func testScorpionDealMoveReserveAndUndo() {
+        tapMenu("newGame")
+        app.buttons["new-scorpion"].tap()
+        XCTAssertTrue(stock.waitForExistence(timeout: 5))
+        XCTAssertEqual(moves.label, "Moves: 0")
+
+        app.buttons["card-23"].tap()
+        XCTAssertEqual(moves.label, "Moves: 1")
+        XCTAssertTrue(app.buttons["Column 3, Jack of hearts"].waitForExistence(timeout: 2), "onto the queen of hearts")
+        app.buttons["undo"].tap()
+        XCTAssertEqual(moves.label, "Moves: 0")
+
+        stock.tap()
+        XCTAssertEqual(moves.label, "Moves: 1")
+        XCTAssertTrue(app.descendants(matching: .any)["stock-empty"].waitForExistence(timeout: 2), "the reserve is dealt once")
+        let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        screenshot.name = "Scorpion"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+        app.buttons["undo"].tap()
+        XCTAssertEqual(moves.label, "Moves: 0")
+    }
+
     // MARK: - VoiceOver
 
     func testVoiceOverLabelsSayWhereCardsAre() {

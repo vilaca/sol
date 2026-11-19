@@ -4,6 +4,8 @@ import Foundation
 public enum GameKind: String, CaseIterable, Codable, Identifiable, Sendable {
     case klondike
     case freeCell = "freecell"
+    case yukon
+    case scorpion
 
     public var id: String { rawValue }
 }

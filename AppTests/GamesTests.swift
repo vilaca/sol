@@ -32,14 +32,16 @@ final class GamesTests: XCTestCase {
     // MARK: - New menu
 
     func testNewMenuListsEveryGameAndVariant() {
-        XCTAssertEqual(GameChoice.all.map(\.id), ["new-klondike.draw-1", "new-klondike.draw-3", "new-freecell"])
-        XCTAssertEqual(GameChoice.all.map(\.title), ["Klondike – Draw 1", "Klondike – Draw 3", "FreeCell"])
+        XCTAssertEqual(GameChoice.all.map(\.id), ["new-klondike.draw-1", "new-klondike.draw-3", "new-freecell", "new-yukon", "new-scorpion"])
+        XCTAssertEqual(GameChoice.all.map(\.title), ["Klondike – Draw 1", "Klondike – Draw 3", "FreeCell", "Yukon", "Scorpion"])
     }
 
     func testStatisticsKeysNameTheGameAndItsOptions() {
         XCTAssertEqual(AnyGame(Klondike(seed: 1)).statisticsKey, "klondike.draw-1")
         XCTAssertEqual(AnyGame(Klondike(seed: 1, drawCount: 3)).statisticsKey, "klondike.draw-3")
         XCTAssertEqual(AnyGame(FreeCell(seed: 1)).statisticsKey, "freecell")
+        XCTAssertEqual(AnyGame(Yukon(seed: 1)).statisticsKey, "yukon")
+        XCTAssertEqual(AnyGame(Scorpion(seed: 1)).statisticsKey, "scorpion")
         XCTAssertEqual(Klondike.title(for: KlondikeOptions(drawCount: 3)), "Klondike – Draw 3")
     }
 
@@ -191,5 +193,26 @@ final class GamesTests: XCTestCase {
         XCTAssertTrue(after.move(from: .tableau(0), at: 0, to: .cell(1)))
         XCTAssertEqual(Speech.moved(six, to: .cell(1), before: game, after: after, from: .tableau(0)), "6 of clubs moved to Free cell 2")
         XCTAssertEqual(Speech.hint(.move(Move(from: .cell(0), index: 0, to: .foundation(0))), in: game), "Hint: move Ace of hearts to foundation")
+    }
+
+    // MARK: - Yukon and Scorpion
+
+    func testYukonAndScorpionFitAPhone() {
+        let size = CGSize(width: 390, height: 700)
+        for board in [Yukon(seed: 1).board, Scorpion(seed: 1).board] {
+            let layout = BoardLayout(size: size, board: board)
+            XCTAssertEqual(layout.pile(at: layout.slotCenter(.tableau(6))), .tableau(6))
+            XCTAssertEqual(layout.pile(at: layout.slotCenter(.foundation(3))), board.spots.first { $0.pile == .foundation(3) }?.isDropTarget == true ? .foundation(3) : nil)
+            XCTAssertLessThanOrEqual(layout.slotCenter(.tableau(6)).x + layout.cardSize.width / 2, size.width)
+        }
+    }
+
+    func testScorpionReserveSpeech() {
+        var game = Scorpion(seed: 1)
+        XCTAssertEqual(Speech.stockLabel(game), "Deal the reserve")
+        XCTAssertEqual(Speech.hint(.draw, in: game), "Hint: deal the reserve")
+        XCTAssertTrue(game.draw())
+        XCTAssertEqual(Speech.stockLabel(game), "Reserve empty")
+        XCTAssertEqual(Speech.drew(game), "Reserve dealt")
     }
 }

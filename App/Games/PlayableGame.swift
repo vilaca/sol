@@ -59,6 +59,8 @@ extension GameKind {
         switch self {
         case .klondike: Klondike.self
         case .freeCell: FreeCell.self
+        case .yukon: Yukon.self
+        case .scorpion: Scorpion.self
         }
     }
 

@@ -69,6 +69,10 @@ T = {
     },
     "Turn the waste over": pt("Virar o descarte", "Dar la vuelta al descarte", "Retourner la défausse", "Abwurfstapel umdrehen"),
     "Stock empty": pt("Baralho vazio", "Mazo vacío", "Pioche vide", "Stapel leer", br="Monte vazio"),
+    "Scorpion": pt("Escorpião", "Escorpión", "Scorpion", "Skorpion"),
+    "Deal the reserve": pt("Distribuir a reserva", "Repartir la reserva", "Distribuer la réserve", "Reserve austeilen"),
+    "Reserve empty": pt("Reserva vazia", "Reserva vacía", "Réserve vide", "Reserve leer"),
+    "Reserve dealt": pt("Reserva distribuída", "Reserva repartida", "Réserve distribuée", "Reserve ausgeteilt"),
     "Waste, %@": pt("Descarte, %@", "Descarte, %@", "Défausse, %@", "Abwurfstapel, %@"),
     "Foundation, %@": pt("Base, %@", "Fundación, %@", "Fondation, %@", "Zielstapel, %@"),
     "Empty foundation": pt("Base vazia", "Fundación vacía", "Fondation vide", "Leerer Zielstapel"),
@@ -133,6 +137,7 @@ T = {
     # Hint and dead ends
     "Hint": pt("Dica", "Pista", "Indice", "Tipp"),
     "Hint: move %@ to %@": pt("Dica: mover %1$@ para %2$@", "Pista: mover %1$@ a %2$@", f"Indice{NB}: déplacer %1$@ vers %2$@", "Tipp: %1$@ auf %2$@ legen"),
+    "Hint: deal the reserve": pt("Dica: distribuir a reserva", "Pista: repartir la reserva", f"Indice{NB}: distribuer la réserve", "Tipp: Reserve austeilen"),
     "Hint: draw a card": pt("Dica: virar uma carta", "Pista: robar una carta", f"Indice{NB}: piocher une carte", "Tipp: eine Karte ziehen"),
     "Hint: turn the waste over": pt("Dica: virar o descarte", "Pista: dar la vuelta al descarte", f"Indice{NB}: retourner la défausse", "Tipp: Abwurfstapel umdrehen"),
     "No moves left": pt("Sem jogadas possíveis", "No quedan movimientos", "Plus aucun coup possible", "Keine Züge mehr möglich", br="Sem movimentos possíveis"),

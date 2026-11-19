@@ -3,7 +3,7 @@
 A free, open-source solitaire collection for iPhone and iPad. No ads, no tracking, no in-app purchases, no network access.
 See [PRIVACY.md](PRIVACY.md).
 
-- Games: Klondike (draw 1 or draw 3) and FreeCell, picked from the New menu. Each game keeps its own game in progress.
+- Games: Klondike (draw 1 or draw 3), FreeCell, Yukon and Scorpion, picked from the New menu. Each game keeps its own game in progress.
 - Unlimited undo, hints, tap a card to send it where it fits, or drag it.
 - Finishes the game for you once nothing is left to find out, then celebrates with confetti (a plain fade with Reduce Motion).
 - Timer and move count; statistics per game and rule options (games, wins, streaks, best time, fewest moves), kept on the device.

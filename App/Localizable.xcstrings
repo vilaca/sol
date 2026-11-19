@@ -875,6 +875,40 @@
         }
       }
     },
+    "Deal the reserve": {
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distribuir a reserva"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distribuir a reserva"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repartir la reserva"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distribuer la réserve"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reserve austeilen"
+          }
+        }
+      }
+    },
     "diamonds": {
       "localizations": {
         "pt-PT": {
@@ -1631,6 +1665,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tipp"
+          }
+        }
+      }
+    },
+    "Hint: deal the reserve": {
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dica: distribuir a reserva"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dica: distribuir a reserva"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pista: repartir la reserva"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indice : distribuer la réserve"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipp: Reserve austeilen"
           }
         }
       }
@@ -2587,6 +2655,74 @@
         }
       }
     },
+    "Reserve dealt": {
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reserva distribuída"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reserva distribuída"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reserva repartida"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réserve distribuée"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reserve ausgeteilt"
+          }
+        }
+      }
+    },
+    "Reserve empty": {
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reserva vazia"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reserva vazia"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reserva vacía"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réserve vide"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reserve leer"
+          }
+        }
+      }
+    },
     "Reset": {
       "localizations": {
         "pt-PT": {
@@ -2719,6 +2855,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "aufgedeckt: %@"
+          }
+        }
+      }
+    },
+    "Scorpion": {
+      "localizations": {
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escorpião"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escorpião"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escorpión"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scorpion"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skorpion"
           }
         }
       }
