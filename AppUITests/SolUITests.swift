@@ -39,7 +39,7 @@ final class SolUITests: XCTestCase {
     func testNewGameMidGameAsksBeforeCountingALoss() {
         stock.tap()
         tapMenu("newGame")
-        app.buttons["New Game – Draw 3"].tap()
+        app.buttons["new-klondike.draw-3"].tap()
         let abandon = app.buttons["abandon"].firstMatch
         XCTAssertTrue(abandon.waitForExistence(timeout: 2))
         abandon.tap()
@@ -56,7 +56,7 @@ final class SolUITests: XCTestCase {
         XCTAssertTrue(stock.waitForExistence(timeout: 5))
         XCTAssertEqual(moves.label, "Moves: 0")
         tapMenu("newGame")
-        app.buttons["New Game – Draw 3"].tap()
+        app.buttons["new-klondike.draw-3"].tap()
         XCTAssertFalse(app.buttons["abandon"].waitForExistence(timeout: 1))
         XCTAssertEqual(moves.label, "Moves: 0")
     }
@@ -99,7 +99,7 @@ final class SolUITests: XCTestCase {
         app.launchArguments = ["-seed", "1510", "-reset"]
         app.launch()
         tapMenu("newGame")
-        app.buttons["New Game – Draw 3"].tap()
+        app.buttons["new-klondike.draw-3"].tap()
         let alert = app.alerts["No moves left"]
         XCTAssertTrue(alert.waitForExistence(timeout: 3))
         alert.buttons["Keep Playing"].tap()
@@ -127,6 +127,31 @@ final class SolUITests: XCTestCase {
         app.launchArguments = []
         app.launch()
         XCTAssertEqual(moves.label, "Moves: 1")
+    }
+
+    // MARK: - FreeCell
+
+    /// Seed 42 deals FreeCell with the 10 of spades (card 9) on column 4 and the jack of hearts (card 23) on column 5.
+    func testFreeCellDealMoveAndUndo() {
+        tapMenu("newGame")
+        app.buttons["new-freecell"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["cell-0"].waitForExistence(timeout: 5))
+        XCTAssertFalse(stock.exists, "FreeCell has no stock")
+        XCTAssertTrue(app.buttons["Column 8, 9 of diamonds"].exists)
+        XCTAssertEqual(moves.label, "Moves: 0")
+
+        app.buttons["hint"].tap()
+        XCTAssertEqual(moves.label, "Moves: 0")
+        app.buttons["card-9"].tap()
+        XCTAssertEqual(moves.label, "Moves: 1")
+        XCTAssertTrue(app.buttons["Column 5, 10 of spades"].waitForExistence(timeout: 2), "onto the jack of hearts")
+
+        app.buttons["undo"].tap()
+        XCTAssertEqual(moves.label, "Moves: 0")
+        let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        screenshot.name = "FreeCell"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
     }
 
     // MARK: - VoiceOver

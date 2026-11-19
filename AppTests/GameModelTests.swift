@@ -45,7 +45,7 @@ final class GameModelTests: XCTestCase {
     // MARK: - Game state
 
     func testSeedGivesKnownDeal() {
-        XCTAssertEqual(makeModel().game, Klondike(seed: 42))
+        XCTAssertEqual(makeModel().game, AnyGame(Klondike(seed: 42)))
     }
 
     func testUndoRestoresPreviousState() {
@@ -215,5 +215,41 @@ final class StatisticsTests: XCTestCase {
         XCTAssertEqual(GameTime.format(0), "0:00")
         XCTAssertEqual(GameTime.format(65.9), "1:05")
         XCTAssertEqual(GameTime.format(3723), "1:02:03")
+    }
+}
+
+// MARK: - The Klondike-only API these tests were written against, on top of the per-game one
+
+extension AnyGame {
+    var drawCount: Int { (base as? Klondike)?.drawCount ?? 0 }
+}
+
+extension GameModel {
+    var preferredDrawCount: Int {
+        get { (preferredOptions(for: .klondike) as? KlondikeOptions)?.drawCount ?? 1 }
+        set { setPreferredOptions(KlondikeOptions(drawCount: newValue), for: .klondike) }
+    }
+
+    func newGame(drawCount: Int) {
+        newGame(GameChoice(kind: .klondike, variant: ["draw": drawCount == 3 ? 1 : 0]))
+    }
+}
+
+extension Statistics {
+    var drawOne: ModeStatistics { self["klondike.draw-1"] }
+    var drawThree: ModeStatistics { self["klondike.draw-3"] }
+
+    mutating func recordWin(drawCount: Int, time: TimeInterval, moves: Int) -> WinRecord {
+        recordWin(key: "klondike.draw-\(drawCount)", time: time, moves: moves)
+    }
+
+    mutating func recordLoss(drawCount: Int) {
+        recordLoss(key: "klondike.draw-\(drawCount)")
+    }
+}
+
+extension BoardLayout {
+    init(size: CGSize) {
+        self.init(size: size, board: Klondike(seed: 0).board)
     }
 }

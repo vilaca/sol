@@ -7,14 +7,18 @@ struct LaunchOptions {
     var seed: UInt64?
     /// `-reset`: ignore and clear any saved game, settings and statistics.
     var reset = false
+    /// `-game <kind>`: play this game (e.g. `freecell`) instead of the last one played.
+    var game: GameKind?
 
     static var current: LaunchOptions {
         let arguments = ProcessInfo.processInfo.arguments
-        var options = LaunchOptions()
-        if let i = arguments.firstIndex(of: "-seed"), i + 1 < arguments.count {
-            options.seed = UInt64(arguments[i + 1])
+        func value(_ name: String) -> String? {
+            arguments.firstIndex(of: name).flatMap { $0 + 1 < arguments.count ? arguments[$0 + 1] : nil }
         }
+        var options = LaunchOptions()
+        options.seed = value("-seed").flatMap { UInt64($0) }
         options.reset = arguments.contains("-reset")
+        options.game = value("-game").flatMap(GameKind.init(rawValue:))
         return options
     }
 }
@@ -28,22 +32,21 @@ private struct GameClock: Codable {
 }
 
 /// Owns the current game, undo history, play time, statistics and on-device persistence.
+/// Each game keeps its own saved game, so switching games and back resumes where the player left off.
 /// Nothing leaves the device.
 @MainActor
 final class GameModel: ObservableObject {
-    @Published private(set) var game: Klondike
+    @Published private(set) var game: AnyGame
     /// Cards that moved in the last change; drawn above the rest so they never slide under other cards.
     @Published private(set) var movedCards: Set<Int> = []
     @Published private(set) var isAutoCompleting = false
     @Published private(set) var statistics: Statistics
     /// What the current game's win achieved; `nil` until it is won.
     @Published private(set) var lastWin: WinRecord?
-    /// Deal mode for the next new game.
-    @Published var preferredDrawCount: Int {
-        didSet { defaults.set(preferredDrawCount, forKey: Self.drawCountKey) }
-    }
+    /// The options each game is dealt with next: its settings, with the variant last chosen in the New menu.
+    @Published private var preferredOptions: [GameKind: any GameOptions]
 
-    private var history: [Klondike] = []
+    private var history: [AnyGame] = []
     /// Bumped by every new deal, so a running autocomplete stops instead of playing into the next game.
     private var deal = 0
     private var clock = GameClock()
@@ -54,36 +57,52 @@ final class GameModel: ObservableObject {
     private let fixedSeed: UInt64?
     private let now: () -> Date
 
-    private static let saveKey = "savedGame"
-    private static let clockKey = "savedClock"
-    private static let drawCountKey = "drawCount"
+    private static let currentGameKey = "currentGame"
     private static let statisticsKey = "statistics"
+    /// Klondike's deal mode, as saved before games had options.
+    private static let legacyDrawCountKey = "drawCount"
+
+    /// Klondike keeps the keys it had before Sol had other games, so its saved game survives the update.
+    private static func saveKey(_ kind: GameKind) -> String {
+        kind == .klondike ? "savedGame" : "savedGame.\(kind.rawValue)"
+    }
+
+    private static func clockKey(_ kind: GameKind) -> String {
+        kind == .klondike ? "savedClock" : "savedClock.\(kind.rawValue)"
+    }
+
+    private static func optionsKey(_ kind: GameKind) -> String {
+        "options.\(kind.rawValue)"
+    }
 
     init(launch: LaunchOptions = LaunchOptions(), defaults: UserDefaults = .standard, now: @escaping () -> Date = Date.init) {
         self.defaults = defaults
         self.now = now
         fixedSeed = launch.seed
         if launch.reset {
-            for key in [Self.saveKey, Self.clockKey, Self.drawCountKey, Self.statisticsKey] + PreferenceKey.all {
+            let keys = [Self.currentGameKey, Self.statisticsKey, Self.legacyDrawCountKey]
+                + GameKind.allCases.flatMap { [Self.saveKey($0), Self.clockKey($0), Self.optionsKey($0)] }
+            for key in keys + PreferenceKey.all {
                 defaults.removeObject(forKey: key)
             }
             // A clean slate for tests, so they start on the board rather than on the welcome page.
             defaults.set(true, forKey: PreferenceKey.hasSeenWelcome)
         }
         statistics = defaults.data(forKey: Self.statisticsKey).flatMap { try? JSONDecoder().decode(Statistics.self, from: $0) } ?? Statistics()
-        let drawCount = defaults.integer(forKey: Self.drawCountKey) == 3 ? 3 : 1
-        preferredDrawCount = drawCount
-        if launch.seed == nil,
-           let data = defaults.data(forKey: Self.saveKey),
-           let saved = try? JSONDecoder().decode(Klondike.self, from: data),
-           !saved.isWon {
-            game = saved
-            clock = defaults.data(forKey: Self.clockKey).flatMap { try? JSONDecoder().decode(GameClock.self, from: $0) } ?? GameClock()
+        let preferredOptions = Self.loadOptions(from: defaults)
+        self.preferredOptions = preferredOptions
+        let kind = launch.game ?? defaults.string(forKey: Self.currentGameKey).flatMap(GameKind.init(rawValue:)) ?? .klondike
+        if launch.seed == nil, let saved = Self.loadSaved(kind, from: defaults), !saved.game.isWon {
+            game = saved.game
+            clock = saved.clock
         } else {
-            game = Klondike(seed: launch.seed ?? .random(in: .min ... .max), drawCount: drawCount)
+            game = AnyGame(kind.type.deal(seed: launch.seed ?? .random(in: .min ... .max), options: preferredOptions[kind]))
         }
+        defaults.set(kind.rawValue, forKey: Self.currentGameKey)
         updateClock()
     }
+
+    var kind: GameKind { game.kind }
 
     var canUndo: Bool { !history.isEmpty && !isAutoCompleting && !game.isWon }
 
@@ -103,23 +122,61 @@ final class GameModel: ObservableObject {
         save()
     }
 
-    /// Deals a new game. Abandoning a started game records a loss.
-    func newGame(drawCount: Int? = nil) {
-        if let drawCount { preferredDrawCount = drawCount }
-        if isInProgress { recordStatistics { $0.recordLoss(drawCount: game.drawCount) } }
-        deal += 1
-        history = []
-        movedCards = []
-        lastWin = nil
-        clock = GameClock()
-        runningSince = nil
-        game = Klondike(seed: fixedSeed ?? .random(in: .min ... .max), drawCount: preferredDrawCount)
-        save()
+    // MARK: - New games
+
+    /// Deals the current game again, with the player's options. Abandoning a started game records a loss.
+    func newGame() {
+        if isInProgress { recordStatistics { $0.recordLoss(key: game.statisticsKey) } }
+        start(AnyGame(kind.type.deal(seed: fixedSeed ?? .random(in: .min ... .max), options: preferredOptions(for: kind))), clock: GameClock())
     }
 
-    func resetStatistics() {
-        recordStatistics { $0 = Statistics() }
+    /// Plays the game picked in the New menu, remembering its variant. Another game's saved game resumes
+    /// when it is the same variant; otherwise a new one is dealt. The game being left stays saved.
+    func newGame(_ choice: GameChoice) {
+        setPreferredOptions(choice.options(applyingTo: preferredOptions(for: choice.kind)), for: choice.kind)
+        guard choice.kind != kind else { return newGame() }
+        save()
+        let saved = Self.loadSaved(choice.kind, from: defaults)
+        if let saved, !saved.game.isWon, choice.matches(saved.game.options) {
+            start(saved.game, clock: saved.clock)
+            return
+        }
+        if let saved, saved.clock.isStarted, !saved.game.isWon {
+            recordStatistics { $0.recordLoss(key: saved.game.statisticsKey) }
+        }
+        let options = preferredOptions(for: choice.kind)
+        start(AnyGame(choice.kind.type.deal(seed: fixedSeed ?? .random(in: .min ... .max), options: options)), clock: GameClock())
     }
+
+    /// Whether `newGame(choice)` would give up a started game, which counts as a loss.
+    func abandons(_ choice: GameChoice) -> Bool {
+        if choice.kind == kind { return isInProgress }
+        guard let saved = Self.loadSaved(choice.kind, from: defaults), saved.clock.isStarted, !saved.game.isWon else { return false }
+        return !choice.matches(saved.game.options)
+    }
+
+    // MARK: - Options and statistics
+
+    /// The options `kind` is dealt with next.
+    func preferredOptions(for kind: GameKind) -> any GameOptions {
+        preferredOptions[kind] ?? kind.type.defaultOptions
+    }
+
+    /// Applies from the next deal: a game in progress keeps the options it was dealt with.
+    func setPreferredOptions(_ options: any GameOptions, for kind: GameKind) {
+        preferredOptions[kind] = options
+        if let data = try? JSONEncoder().encode(options) {
+            defaults.set(data, forKey: Self.optionsKey(kind))
+        }
+    }
+
+    /// Clears one statistics bucket; by default the current game's.
+    func resetStatistics(_ key: String? = nil) {
+        let key = key ?? game.statisticsKey
+        recordStatistics { $0.reset(key) }
+    }
+
+    // MARK: - Play
 
     func undo() {
         guard canUndo, let previous = history.popLast() else { return }
@@ -151,8 +208,21 @@ final class GameModel: ObservableObject {
 
     // MARK: - Private
 
+    private func start(_ newGame: AnyGame, clock: GameClock) {
+        deal += 1
+        history = []
+        movedCards = []
+        lastWin = nil
+        self.clock = clock
+        runningSince = nil
+        game = newGame
+        defaults.set(newGame.kind.rawValue, forKey: Self.currentGameKey)
+        updateClock()
+        save()
+    }
+
     @discardableResult
-    private func apply(_ change: (inout Klondike) -> Bool) -> Bool {
+    private func apply(_ change: (inout AnyGame) -> Bool) -> Bool {
         var next = game
         guard change(&next) else { return false }
         history.append(game)
@@ -161,7 +231,7 @@ final class GameModel: ObservableObject {
         return true
     }
 
-    private func replace(_ old: Klondike, with new: Klondike) {
+    private func replace(_ old: AnyGame, with new: AnyGame) {
         let before = old.pileByCard
         movedCards = Set(new.pileByCard.filter { before[$0.key] != $0.value }.keys)
         game = new
@@ -170,7 +240,7 @@ final class GameModel: ObservableObject {
             let time = elapsed()
             let moves = new.moveCount
             var record: WinRecord?
-            recordStatistics { record = $0.recordWin(drawCount: new.drawCount, time: time, moves: moves) }
+            recordStatistics { record = $0.recordWin(key: new.statisticsKey, time: time, moves: moves) }
             lastWin = record
         }
         save()
@@ -197,9 +267,28 @@ final class GameModel: ObservableObject {
     private func save() {
         var saved = clock
         saved.accumulated = elapsed()
-        if let data = try? JSONEncoder().encode(game), let clockData = try? JSONEncoder().encode(saved) {
-            defaults.set(data, forKey: Self.saveKey)
-            defaults.set(clockData, forKey: Self.clockKey)
+        if let data = try? JSONEncoder().encode(game.base), let clockData = try? JSONEncoder().encode(saved) {
+            defaults.set(data, forKey: Self.saveKey(kind))
+            defaults.set(clockData, forKey: Self.clockKey(kind))
         }
+    }
+
+    private static func loadSaved(_ kind: GameKind, from defaults: UserDefaults) -> (game: AnyGame, clock: GameClock)? {
+        guard let data = defaults.data(forKey: saveKey(kind)), let game = kind.type.decodeGame(data) else { return nil }
+        let clock = defaults.data(forKey: clockKey(kind)).flatMap { try? JSONDecoder().decode(GameClock.self, from: $0) } ?? GameClock()
+        return (AnyGame(game), clock)
+    }
+
+    private static func loadOptions(from defaults: UserDefaults) -> [GameKind: any GameOptions] {
+        var result: [GameKind: any GameOptions] = [:]
+        for kind in GameKind.allCases {
+            if let data = defaults.data(forKey: optionsKey(kind)) {
+                result[kind] = kind.type.decodeOptions(data)
+            }
+        }
+        if result[.klondike] == nil, defaults.object(forKey: legacyDrawCountKey) != nil {
+            result[.klondike] = KlondikeOptions(drawCount: defaults.integer(forKey: legacyDrawCountKey) == 3 ? 3 : 1)
+        }
+        return result
     }
 }

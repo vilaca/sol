@@ -4,6 +4,8 @@ import SwiftUI
 struct CardView: View {
     let card: Card
     let size: CGSize
+    /// Draws the corner index bigger than usual, for the narrow cards of boards wider than seven columns.
+    var indexScale: CGFloat = 1
     /// What VoiceOver says; defaults to the card's name.
     var accessibilityText: String?
     /// Outlined by the hint button.
@@ -43,14 +45,14 @@ struct CardView: View {
             // Index row: stays readable when the card is covered in a column.
             HStack(alignment: .center, spacing: 0) {
                 Text(card.rankLabel)
-                    .font(.system(size: w * 0.3, weight: .bold, design: .rounded))
-                    .tracking(card.rank == 10 ? -w * 0.03 : 0)
+                    .font(.system(size: w * 0.3 * indexScale, weight: .bold, design: .rounded))
+                    .tracking(card.rank == 10 ? -w * 0.03 * indexScale : 0)
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
                 Spacer(minLength: 0)
-                suitImage(size: w * 0.23)
+                suitImage(size: w * 0.23 * indexScale)
             }
-            .padding(.horizontal, w * 0.09)
+            .padding(.horizontal, w * 0.09 / indexScale)
             .padding(.top, w * 0.04)
 
             centre
@@ -173,8 +175,7 @@ private extension Suit {
 /// Outline marking an empty pile.
 struct SlotView: View {
     let size: CGSize
-    var symbol: String?
-    var text: String?
+    var mark: SlotMark = .blank
 
     var body: some View {
         RoundedRectangle(cornerRadius: size.width * 0.1)
@@ -186,10 +187,13 @@ struct SlotView: View {
     }
 
     @ViewBuilder private var label: some View {
-        if let symbol {
+        switch mark {
+        case .blank:
+            EmptyView()
+        case .symbol(let symbol):
             Image(systemName: symbol).font(.system(size: size.width * 0.35, weight: .semibold))
-        } else if let text {
-            Text(text).font(.system(size: size.width * 0.35, weight: .semibold, design: .rounded))
+        case .text(let text):
+            Text(verbatim: text).font(.system(size: size.width * 0.35, weight: .semibold, design: .rounded))
         }
     }
 }

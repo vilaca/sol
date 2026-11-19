@@ -1,3 +1,4 @@
+import SolitaireCore
 import SwiftUI
 
 /// The sheets opened from the toolbar's ⋯ menu.
@@ -8,29 +9,38 @@ enum MenuSheet: String, Identifiable {
     var id: String { rawValue }
 }
 
+/// Statistics for one game with one set of options, picked at the top; opens on the game in play.
 struct StatisticsView: View {
     @ObservedObject var model: GameModel
     @Environment(\.dismiss) private var dismiss
-    @State private var drawCount: Int
+    @State private var kind: GameKind
+    /// The options whose statistics are shown.
+    @State private var options: any GameOptions
     @State private var confirmingReset = false
 
     init(model: GameModel) {
         self.model = model
-        _drawCount = State(initialValue: model.game.drawCount)
+        _kind = State(initialValue: model.kind)
+        _options = State(initialValue: model.game.options)
     }
 
-    private var stats: ModeStatistics { model.statistics[drawCount: drawCount] }
+    private var key: String { kind.type.statisticsKey(for: options) }
+    private var stats: ModeStatistics { model.statistics[key] }
 
     var body: some View {
         NavigationStack {
             Form {
                 Section {
-                    Picker("Deal", selection: $drawCount) {
-                        Text("Draw 1").tag(1)
-                        Text("Draw 3").tag(3)
+                    Picker("Game", selection: Binding(get: { kind }, set: show)) {
+                        ForEach(GameKind.allCases) { kind in
+                            Text(verbatim: kind.name).tag(kind)
+                        }
                     }
-                    .pickerStyle(.segmented)
-                    .accessibilityIdentifier("statisticsMode")
+                    .accessibilityIdentifier("statisticsGame")
+                    ForEach(kind.type.ruleSettings) { setting in
+                        RuleSettingPicker(setting: setting, options: $options, segmentsVariants: true)
+                            .accessibilityIdentifier("statistics-\(setting.key)")
+                    }
                 }
                 Section("Games") {
                     row("Played", "\(stats.played)")
@@ -57,12 +67,22 @@ struct StatisticsView: View {
                     Button("Done") { dismiss() }.accessibilityIdentifier("done")
                 }
             }
-            .confirmationDialog("Reset all statistics?", isPresented: $confirmingReset, titleVisibility: .visible) {
-                Button("Reset", role: .destructive) { model.resetStatistics() }
+            .confirmationDialog(
+                Text("Reset the statistics of \(kind.type.title(for: options))?"),
+                isPresented: $confirmingReset,
+                titleVisibility: .visible
+            ) {
+                Button("Reset", role: .destructive) { model.resetStatistics(key) }
             } message: {
-                Text("This clears the Draw 1 and Draw 3 statistics. It can't be undone.")
+                Text("It can't be undone.")
             }
         }
+    }
+
+    /// Another game: shown with the options of its game in play, or those it is dealt with next.
+    private func show(_ kind: GameKind) {
+        self.kind = kind
+        options = kind == model.kind ? model.game.options : model.preferredOptions(for: kind)
     }
 
     /// `nil` shows a dash: nothing recorded yet.
@@ -75,6 +95,29 @@ struct StatisticsView: View {
                 .monospacedDigit()
         }
         .accessibilityElement(children: .combine)
+    }
+}
+
+/// Picks one rule setting's value. With `segmentsVariants`, a variant shows as segments (its choices name
+/// themselves, "Draw 1"); otherwise a picker with the setting's title.
+private struct RuleSettingPicker: View {
+    let setting: RuleSetting
+    @Binding var options: any GameOptions
+    var segmentsVariants = false
+
+    var body: some View {
+        let picker = Picker(selection: Binding(get: { setting.choice(in: options) }, set: { options = setting.setting($0, in: options) })) {
+            ForEach(setting.choices.indices, id: \.self) { i in
+                Text(setting.choices[i].title).tag(i)
+            }
+        } label: {
+            Text(setting.title)
+        }
+        if segmentsVariants, setting.isVariant {
+            picker.pickerStyle(.segmented)
+        } else {
+            picker
+        }
     }
 }
 
@@ -93,13 +136,18 @@ struct SettingsView: View {
                     Toggle("Show timer", isOn: $showTimer)
                         .accessibilityIdentifier("timerToggle")
                 }
-                Section {
-                    Picker("Deal", selection: $model.preferredDrawCount) {
-                        Text("Draw 1").tag(1)
-                        Text("Draw 3").tag(3)
+                // One section per game with rule options.
+                ForEach(GameKind.allCases.filter { !$0.type.ruleSettings.isEmpty }) { kind in
+                    Section {
+                        ForEach(kind.type.ruleSettings) { setting in
+                            settingRow(setting, of: kind)
+                                .accessibilityIdentifier("setting-\(kind.rawValue).\(setting.key)")
+                        }
+                    } header: {
+                        Text(verbatim: kind.name)
+                    } footer: {
+                        Text("Applies from the next game.")
                     }
-                } footer: {
-                    Text("Applies from the next game.")
                 }
             }
             .navigationTitle("Settings")
@@ -109,6 +157,18 @@ struct SettingsView: View {
                     Button("Done") { dismiss() }.accessibilityIdentifier("done")
                 }
             }
+        }
+    }
+
+    @ViewBuilder
+    private func settingRow(_ setting: RuleSetting, of kind: GameKind) -> some View {
+        let options = Binding(get: { model.preferredOptions(for: kind) }, set: { model.setPreferredOptions($0, for: kind) })
+        if setting.isToggle {
+            Toggle(isOn: Binding(get: { setting.choice(in: options.wrappedValue) == 1 }, set: { options.wrappedValue = setting.setting($0 ? 1 : 0, in: options.wrappedValue) })) {
+                Text(setting.title)
+            }
+        } else {
+            RuleSettingPicker(setting: setting, options: options)
         }
     }
 }
@@ -138,7 +198,7 @@ struct AboutView: View {
                             .background(Circle().fill(Color(red: 0.07, green: 0.17, blue: 0.4)))
                             .accessibilityHidden(true)
                         Text(verbatim: "Sol").font(.largeTitle.bold())
-                        Text("Klondike solitaire, free for everyone.")
+                        Text("Solitaire card games, free for everyone.")
                             .multilineTextAlignment(.center)
                         Text("Version \(version)")
                             .font(.footnote)

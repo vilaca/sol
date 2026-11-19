@@ -33,7 +33,7 @@ final class SpeechTests: XCTestCase {
         XCTAssertEqual(Speech.label(for: up(.spades, 8), in: .tableau(0), at: 2, of: game), "Column 1, 8 of spades, 2 hidden cards, under 1 card")
         XCTAssertEqual(Speech.label(for: up(.hearts, 7), in: .tableau(0), at: 3, of: game), "Column 1, 7 of hearts")
         XCTAssertEqual(Speech.label(for: up(.diamonds, 9), in: .tableau(2), at: 0, of: game), "Column 3, 9 of diamonds")
-        XCTAssertEqual(Speech.emptyColumnLabel(3), "Column 4, empty")
+        XCTAssertEqual(Speech.emptyLabel(.tableau(3), of: game), "Column 4, empty")
     }
 
     func testStockLabel() {

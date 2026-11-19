@@ -21,8 +21,8 @@ struct GameView: View {
     @State private var shakeTarget: ShakeTarget?
     @State private var shakeProgress: CGFloat = 0
     @State private var sheet: MenuSheet?
-    /// Deal mode of a New Game waiting for "Abandon this game?" to be confirmed.
-    @State private var pendingDrawCount: Int?
+    /// The New-menu choice waiting for "Abandon this game?" to be confirmed.
+    @State private var pendingChoice: GameChoice?
     /// The hint being shown; cleared after a moment or by the next move.
     @State private var hint: Hint?
     @State private var showsNoMoves = false
@@ -38,7 +38,7 @@ struct GameView: View {
     var body: some View {
         VStack(spacing: 0) {
             GeometryReader { geometry in
-                board(BoardLayout(size: geometry.size))
+                board(BoardLayout(size: geometry.size, board: model.game.board))
             }
             toolbar
         }
@@ -95,61 +95,66 @@ struct GameView: View {
     private func board(_ layout: BoardLayout) -> some View {
         ZStack(alignment: .topLeading) {
             slots(layout)
+            let order = Dictionary(layout.board.spots.enumerated().map { ($1.pile, $0) }) { first, _ in first }
             ForEach(layout.place(model.game, raised: model.movedCards)) { placed in
-                cardView(placed, layout)
+                cardView(placed, order: order[placed.pile] ?? 0, layout)
             }
         }
         .frame(width: layout.size.width, height: layout.size.height, alignment: .topLeading)
         .coordinateSpace(name: Self.board)
-        // VoiceOver reads the top row, then each column top to bottom (see `readingOrder`).
+        // VoiceOver reads the piles in the board's order, each column top to bottom (see `readingOrder`).
         .accessibilityElement(children: .contain)
     }
 
-    @ViewBuilder
     private func slots(_ layout: BoardLayout) -> some View {
         let game = model.game
-        SlotView(size: layout.cardSize, symbol: "arrow.counterclockwise")
-            .modifier(HintGlow(isOn: hint == .draw && game.stock.isEmpty, size: layout.cardSize))
-            .onTapGesture { draw() }
-            .accessibilityElement()
-            .accessibilityLabel(Speech.stockLabel(game))
-            .accessibilityIdentifier("stock-empty")
-            .accessibilityAddTraits(.isButton)
-            .accessibilityHidden(!game.stock.isEmpty)
-            .accessibilitySortPriority(Self.readingOrder(.stock, 0))
-            .position(layout.slotCenter(.stock))
-        ForEach(0..<Klondike.foundationCount, id: \.self) { f in
-            SlotView(size: layout.cardSize, text: "A")
-                .modifier(HintGlow(isOn: game.foundations[f].isEmpty && hintDestination == .foundation(f), size: layout.cardSize))
-                .accessibilityElement()
-                .accessibilityLabel(Text("Empty foundation"))
-                .accessibilityIdentifier("foundation-\(f)")
-                .accessibilityHidden(!game.foundations[f].isEmpty)
-                .accessibilitySortPriority(Self.readingOrder(.foundation(f), 0))
-                .position(layout.slotCenter(.foundation(f)))
-        }
-        ForEach(0..<Klondike.tableauCount, id: \.self) { t in
-            SlotView(size: layout.cardSize, text: "K")
-                .modifier(HintGlow(isOn: game.tableau[t].isEmpty && hintDestination == .tableau(t), size: layout.cardSize))
-                .accessibilityElement()
-                .accessibilityLabel(Speech.emptyColumnLabel(t))
-                .accessibilityIdentifier("tableau-\(t)")
-                .accessibilityHidden(!game.tableau[t].isEmpty)
-                .accessibilitySortPriority(Self.readingOrder(.tableau(t), 0))
-                .position(layout.slotCenter(.tableau(t)))
+        return ForEach(Array(layout.board.spots.enumerated()), id: \.offset) { order, spot in
+            if let mark = spot.slot {
+                let isEmpty = game.cards(in: spot.pile).isEmpty
+                let isHinted = spot.pile == .stock
+                    ? hint == .draw && isEmpty
+                    : isEmpty && hintDestination == spot.pile
+                SlotView(size: layout.cardSize, mark: mark)
+                    .modifier(HintGlow(isOn: isHinted, size: layout.cardSize))
+                    .onTapGesture { if spot.pile == .stock { draw() } }
+                    .accessibilityElement()
+                    .accessibilityLabel(Speech.emptyLabel(spot.pile, of: game.base))
+                    .accessibilityIdentifier(Self.slotIdentifier(spot.pile))
+                    .accessibilityAddTraits(spot.pile == .stock ? .isButton : [])
+                    .accessibilityHidden(!isEmpty)
+                    .accessibilitySortPriority(Self.readingOrder(order, 0))
+                    .position(layout.center(spot))
+            }
         }
     }
 
-    private func cardView(_ placed: PlacedCard, _ layout: BoardLayout) -> some View {
+    /// "stock-empty", "foundation-0", "tableau-3", "cell-1": what UI tests find empty piles by.
+    private static func slotIdentifier(_ pile: Pile) -> String {
+        switch pile {
+        case .stock: "stock-empty"
+        case .waste: "waste-empty"
+        case .foundation(let i): "foundation-\(i)"
+        case .tableau(let i): "tableau-\(i)"
+        case .cell(let i): "cell-\(i)"
+        }
+    }
+
+    private func cardView(_ placed: PlacedCard, order: Int, _ layout: BoardLayout) -> some View {
         let game = model.game
         let isDragged = drag.map { $0.pile == placed.pile && placed.index >= $0.index } ?? false
         let isShaking = shakeTarget.map { $0.pile == placed.pile && placed.index >= $0.index } ?? false
         let isTop = placed.index == game.cards(in: placed.pile).count - 1
         let isAccessible = if case .tableau = placed.pile { placed.card.isFaceUp } else { isTop }
-        let label = isAccessible ? Speech.label(for: placed.card, in: placed.pile, at: placed.index, of: game) : nil
+        let label = isAccessible ? Speech.label(for: placed.card, in: placed.pile, at: placed.index, of: game.base) : nil
         // Not rebuilt on every drag frame: VoiceOver users don't drag.
-        let moves = drag == nil && isAccessible && canDrag(placed) ? Speech.moves(from: placed.pile, at: placed.index, in: game) : []
-        return CardView(card: placed.card, size: layout.cardSize, accessibilityText: label, isHinted: isHinted(placed, isTop: isTop))
+        let moves = drag == nil && isAccessible && canDrag(placed) ? Speech.moves(from: placed.pile, at: placed.index, in: game.base) : []
+        return CardView(
+            card: placed.card,
+            size: layout.cardSize,
+            indexScale: layout.indexScale,
+            accessibilityText: label,
+            isHinted: isHinted(placed, isTop: isTop)
+        )
             .modifier(ShakeEffect(progress: isShaking ? shakeProgress : 0))
             .offset(isDragged ? drag?.translation ?? .zero : .zero)
             .gesture(dragGesture(placed, layout), including: canDrag(placed) ? .all : .subviews)
@@ -161,7 +166,7 @@ struct GameView: View {
             })
             .accessibilityIdentifier(placed.pile == .stock ? "stock" : placed.card.isFaceUp ? "card-\(placed.card.id)" : "card-hidden")
             .accessibilityHidden(!isAccessible)
-            .accessibilitySortPriority(Self.readingOrder(placed.pile, placed.index))
+            .accessibilitySortPriority(Self.readingOrder(order, placed.index))
             .position(placed.center)
             .zIndex(isDragged ? 1000 + placed.zIndex : placed.zIndex)
     }
@@ -187,7 +192,7 @@ struct GameView: View {
             return
         }
         withAnimation(.easeInOut(duration: 0.2)) { hint = next }
-        Speech.announce(Speech.hint(next, in: model.game))
+        Speech.announce(Speech.hint(next, in: model.game.base))
         Task { @MainActor in
             try? await Task.sleep(nanoseconds: 2_500_000_000)
             if hint == next { withAnimation(.easeInOut(duration: 0.4)) { hint = nil } }
@@ -195,9 +200,9 @@ struct GameView: View {
     }
 
     /// Says "No moves left" once per dead end, so drawing through a stuck stock doesn't ask again on every card.
-    private func warnIfStuck(_ game: Klondike) {
+    private func warnIfStuck(_ game: AnyGame) {
         guard !game.isWon, !model.isAutoCompleting else { return }
-        if game.hint != nil {
+        if !game.isStuck {
             warnedNoMoves = false
         } else if !warnedNoMoves {
             warnedNoMoves = true
@@ -206,20 +211,14 @@ struct GameView: View {
         }
     }
 
-    /// Higher is read first: stock, waste, foundations, then column 1 top to bottom, column 2, …
-    private static func readingOrder(_ pile: Pile, _ index: Int) -> Double {
-        switch pile {
-        case .stock: 1000
-        case .waste: 999
-        case .foundation(let f): Double(990 - f)
-        case .tableau(let t): Double(900 - t * 40 - index)
-        }
+    /// Higher is read first: the piles in the order of the board's spots (stock, waste, foundations, then
+    /// column 1 top to bottom, column 2, … for Klondike), each pile from its bottom card up.
+    private static func readingOrder(_ spot: Int, _ index: Int) -> Double {
+        Double(100_000 - spot * 200 - index)
     }
 
     private func canDrag(_ placed: PlacedCard) -> Bool {
-        guard placed.card.isFaceUp, !model.isAutoCompleting else { return false }
-        if case .tableau = placed.pile { return true }
-        return placed.index == model.game.cards(in: placed.pile).count - 1
+        !model.isAutoCompleting && model.game.canPickUp(from: placed.pile, at: placed.index)
     }
 
     /// A tap sends the card to the best pile (a foundation first). With nowhere to go, it shakes.
@@ -250,7 +249,7 @@ struct GameView: View {
             Haptics.moved(toFoundation: destination.isFoundation)
             // The winning move is announced as "You won!" (see onChange), not cut off by this one.
             if !model.game.isWon {
-                Speech.announce(Speech.moved(source[placed.index], to: destination, before: before, after: model.game, from: placed.pile))
+                Speech.announce(Speech.moved(source[placed.index], to: destination, before: before.base, after: model.game.base, from: placed.pile))
             }
         }
         return moved
@@ -280,8 +279,8 @@ struct GameView: View {
     /// the cards would visibly fly back face up while they flip.
     private func draw() {
         guard !model.isAutoCompleting else { return }
-        let drew = model.game.stock.isEmpty ? model.draw() : withAnimation(.easeInOut(duration: 0.2)) { model.draw() }
-        if drew { Speech.announce(Speech.drew(model.game)) }
+        let drew = model.game.cards(in: .stock).isEmpty ? model.draw() : withAnimation(.easeInOut(duration: 0.2)) { model.draw() }
+        if drew { Speech.announce(Speech.drew(model.game.base)) }
     }
 
     private func dragGesture(_ placed: PlacedCard, _ layout: BoardLayout) -> some Gesture {
@@ -313,20 +312,22 @@ struct GameView: View {
     private var toolbar: some View {
         HStack(spacing: horizontalSizeClass == .regular ? 16 : 0) {
             Menu {
-                Button("New Game – Draw 1") { requestNewGame(drawCount: 1) }
-                Button("New Game – Draw 3") { requestNewGame(drawCount: 3) }
+                ForEach(GameChoice.all) { choice in
+                    Button(choice.title) { requestNewGame(choice) }
+                        .accessibilityIdentifier(choice.id)
+                }
             } label: {
                 Label("New", systemImage: "plus.circle").toolbarHitArea()
             }
             .accessibilityIdentifier("newGame")
             .confirmationDialog(
                 "Abandon this game?",
-                isPresented: Binding(get: { pendingDrawCount != nil }, set: { if !$0 { pendingDrawCount = nil } }),
+                isPresented: Binding(get: { pendingChoice != nil }, set: { if !$0 { pendingChoice = nil } }),
                 titleVisibility: .visible,
-                presenting: pendingDrawCount
-            ) { drawCount in
+                presenting: pendingChoice
+            ) { choice in
                 Button("Abandon and Deal", role: .destructive) {
-                    withAnimation { model.newGame(drawCount: drawCount) }
+                    withAnimation { model.newGame(choice) }
                 }
                 .accessibilityIdentifier("abandon")
             } message: { _ in
@@ -409,11 +410,11 @@ struct GameView: View {
         .minimumScaleFactor(0.6)
     }
 
-    private func requestNewGame(drawCount: Int) {
-        if model.isInProgress {
-            pendingDrawCount = drawCount
+    private func requestNewGame(_ choice: GameChoice) {
+        if model.abandons(choice) {
+            pendingChoice = choice
         } else {
-            withAnimation { model.newGame(drawCount: drawCount) }
+            withAnimation { model.newGame(choice) }
         }
     }
 

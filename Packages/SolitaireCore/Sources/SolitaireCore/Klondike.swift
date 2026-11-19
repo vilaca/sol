@@ -1,25 +1,17 @@
-public enum Pile: Hashable, Codable, Sendable {
-    case stock
-    case waste
-    case foundation(Int)
-    case tableau(Int)
-}
+/// Draw 1 or draw 3, chosen in the New menu or in Settings.
+public struct KlondikeOptions: GameOptions {
+    public var drawCount = 1
 
-public struct Move: Hashable, Sendable {
-    public let from: Pile
-    /// Index of the first moved card in the source pile; every card above it moves too.
-    public let index: Int
-    public let to: Pile
+    public init() {}
 
-    public init(from: Pile, index: Int, to: Pile) {
-        self.from = from
-        self.index = index
-        self.to = to
+    public init(drawCount: Int) {
+        self.drawCount = drawCount
     }
 }
 
 /// Klondike solitaire rules and state. A value type, so undo is just keeping old copies.
-public struct Klondike: Codable, Equatable, Sendable {
+public struct Klondike: SolitaireGame {
+    public static let kind = GameKind.klondike
     public static let foundationCount = 4
     public static let tableauCount = 7
 
@@ -56,6 +48,11 @@ public struct Klondike: Codable, Equatable, Sendable {
         )
     }
 
+    /// Options read from a damaged save deal draw 1 rather than trap.
+    public init(seed: UInt64, options: KlondikeOptions) {
+        self.init(seed: seed, drawCount: options.drawCount == 3 ? 3 : 1)
+    }
+
     init(stock: [Card], waste: [Card], foundations: [[Card]], tableau: [[Card]], drawCount: Int = 1, seed: UInt64 = 0) {
         self.stock = stock
         self.waste = waste
@@ -67,12 +64,19 @@ public struct Klondike: Codable, Equatable, Sendable {
 
     // MARK: - Queries
 
+    public var options: KlondikeOptions { KlondikeOptions(drawCount: drawCount) }
+
+    public var piles: [Pile] {
+        [.stock, .waste] + (0..<Self.foundationCount).map(Pile.foundation) + (0..<Self.tableauCount).map(Pile.tableau)
+    }
+
     public func cards(in pile: Pile) -> [Card] {
         switch pile {
         case .stock: stock
         case .waste: waste
         case .foundation(let i): foundations[i]
         case .tableau(let i): tableau[i]
+        case .cell: []
         }
     }
 
@@ -85,20 +89,6 @@ public struct Klondike: Codable, Equatable, Sendable {
         !isWon && stock.isEmpty && waste.isEmpty && tableau.allSatisfy { $0.allSatisfy(\.isFaceUp) }
     }
 
-    /// Which pile each card is in, keyed by `Card.id`.
-    public var pileByCard: [Int: Pile] {
-        var result: [Int: Pile] = [:]
-        for card in stock { result[card.id] = .stock }
-        for card in waste { result[card.id] = .waste }
-        for (i, pile) in foundations.enumerated() {
-            for card in pile { result[card.id] = .foundation(i) }
-        }
-        for (i, pile) in tableau.enumerated() {
-            for card in pile { result[card.id] = .tableau(i) }
-        }
-        return result
-    }
-
     public func canMove(from source: Pile, at index: Int, to destination: Pile) -> Bool {
         guard source != destination, isValid(source), isValid(destination) else { return false }
         let sourceCards = cards(in: source)
@@ -106,7 +96,7 @@ public struct Klondike: Codable, Equatable, Sendable {
         let movingCount = sourceCards.count - index
 
         switch source {
-        case .stock:
+        case .stock, .cell:
             return false
         case .waste, .foundation:
             guard movingCount == 1 else { return false }
@@ -116,7 +106,7 @@ public struct Klondike: Codable, Equatable, Sendable {
 
         let card = sourceCards[index]
         switch destination {
-        case .stock, .waste:
+        case .stock, .waste, .cell:
             return false
         case .foundation(let f):
             guard movingCount == 1 else { return false }
@@ -126,47 +116,6 @@ public struct Klondike: Codable, Equatable, Sendable {
             guard let top = tableau[t].last else { return card.rank == 13 }
             return top.isFaceUp && top.suit.isRed != card.suit.isRed && card.rank == top.rank - 1
         }
-    }
-
-    public func canApply(_ move: Move) -> Bool {
-        canMove(from: move.from, at: move.index, to: move.to)
-    }
-
-    /// The foundation this card can go to, if any.
-    public func foundationDestination(from source: Pile, at index: Int) -> Pile? {
-        (0..<Self.foundationCount).map(Pile.foundation).first { canMove(from: source, at: index, to: $0) }
-    }
-
-    /// The pile a tap on this card should send it to: a foundation first, then a non-empty column, then an empty one.
-    public func bestDestination(from source: Pile, at index: Int) -> Pile? {
-        if !source.isFoundation, let foundation = foundationDestination(from: source, at: index) {
-            return foundation
-        }
-        let columns = (0..<Self.tableauCount).map(Pile.tableau)
-        if let column = columns.first(where: { !cards(in: $0).isEmpty && canMove(from: source, at: index, to: $0) }) {
-            return column
-        }
-        // A king already at the bottom of a column gains nothing from moving to another empty column.
-        if case .tableau = source, index == 0 { return nil }
-        return columns.first { cards(in: $0).isEmpty && canMove(from: source, at: index, to: $0) }
-    }
-
-    /// The next card that can go to a foundation, lowest rank first.
-    public func nextAutoMove() -> Move? {
-        var candidates: [Move] = []
-        if !waste.isEmpty {
-            candidates.append(Move(from: .waste, index: waste.count - 1, to: .waste))
-        }
-        for (i, column) in tableau.enumerated() where !column.isEmpty {
-            candidates.append(Move(from: .tableau(i), index: column.count - 1, to: .tableau(i)))
-        }
-        let sorted = candidates.sorted { cards(in: $0.from)[$0.index].rank < cards(in: $1.from)[$1.index].rank }
-        for candidate in sorted {
-            for f in 0..<Self.foundationCount where canMove(from: candidate.from, at: candidate.index, to: .foundation(f)) {
-                return Move(from: candidate.from, index: candidate.index, to: .foundation(f))
-            }
-        }
-        return nil
     }
 
     // MARK: - Actions
@@ -208,11 +157,6 @@ public struct Klondike: Codable, Equatable, Sendable {
         return true
     }
 
-    @discardableResult
-    public mutating func apply(_ move: Move) -> Bool {
-        self.move(from: move.from, at: move.index, to: move.to)
-    }
-
     // MARK: - Private
 
     private func isValid(_ pile: Pile) -> Bool {
@@ -220,6 +164,7 @@ public struct Klondike: Codable, Equatable, Sendable {
         case .stock, .waste: true
         case .foundation(let i): (0..<Self.foundationCount).contains(i)
         case .tableau(let i): (0..<Self.tableauCount).contains(i)
+        case .cell: false
         }
     }
 
@@ -229,13 +174,8 @@ public struct Klondike: Codable, Equatable, Sendable {
         case .waste: waste = cards
         case .foundation(let i): foundations[i] = cards
         case .tableau(let i): tableau[i] = cards
+        case .cell: break
         }
     }
 }
 
-extension Pile {
-    public var isFoundation: Bool {
-        if case .foundation = self { return true }
-        return false
-    }
-}
