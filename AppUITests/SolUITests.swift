@@ -38,7 +38,7 @@ final class SolUITests: XCTestCase {
 
     func testNewGameMidGameAsksBeforeCountingALoss() {
         stock.tap()
-        app.buttons["newGame"].tap()
+        tapMenu("newGame")
         app.buttons["New Game – Draw 3"].tap()
         let abandon = app.buttons["abandon"].firstMatch
         XCTAssertTrue(abandon.waitForExistence(timeout: 2))
@@ -53,7 +53,9 @@ final class SolUITests: XCTestCase {
     }
 
     func testNewGameBeforeAnyMoveDealsAtOnce() {
-        app.buttons["newGame"].tap()
+        XCTAssertTrue(stock.waitForExistence(timeout: 5))
+        XCTAssertEqual(moves.label, "Moves: 0")
+        tapMenu("newGame")
         app.buttons["New Game – Draw 3"].tap()
         XCTAssertFalse(app.buttons["abandon"].waitForExistence(timeout: 1))
         XCTAssertEqual(moves.label, "Moves: 0")
@@ -96,7 +98,7 @@ final class SolUITests: XCTestCase {
         app.terminate()
         app.launchArguments = ["-seed", "1510", "-reset"]
         app.launch()
-        app.buttons["newGame"].tap()
+        tapMenu("newGame")
         app.buttons["New Game – Draw 3"].tap()
         let alert = app.alerts["No moves left"]
         XCTAssertTrue(alert.waitForExistence(timeout: 3))
@@ -148,8 +150,16 @@ final class SolUITests: XCTestCase {
         }
     }
 
+    /// Taps a toolbar menu at its centre, like a finger. A plain `tap()` on a SwiftUI `Menu` fails on the
+    /// iOS 26 simulator ("failed to scroll to visible … kAXErrorCannotComplete"), though the menu works.
+    private func tapMenu(_ identifier: String) {
+        let menu = app.buttons[identifier]
+        XCTAssertTrue(menu.waitForExistence(timeout: 5))
+        menu.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+    }
+
     private func openMenu(_ item: String) {
-        app.buttons["more"].tap()
+        tapMenu("more")
         let button = app.buttons[item]
         XCTAssertTrue(button.waitForExistence(timeout: 2))
         button.tap()

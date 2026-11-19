@@ -14,14 +14,14 @@ jobs:
     name: Game rules
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: swift test --package-path Packages/SolitaireCore
 
   app:
     name: App unit + UI tests (iPhone 13 simulator)
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: brew install xcodegen xcbeautify
       - run: scripts/test-app.sh
       - uses: actions/upload-artifact@v4
