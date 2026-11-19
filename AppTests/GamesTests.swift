@@ -32,8 +32,8 @@ final class GamesTests: XCTestCase {
     // MARK: - New menu
 
     func testNewMenuListsEveryGameAndVariant() {
-        XCTAssertEqual(GameChoice.all.map(\.id), ["new-klondike.draw-1", "new-klondike.draw-3", "new-freecell", "new-yukon", "new-scorpion", "new-bakersdozen", "new-eightoff", "new-golf", "new-tripeaks", "new-pyramid"])
-        XCTAssertEqual(GameChoice.all.map(\.title), ["Klondike – Draw 1", "Klondike – Draw 3", "FreeCell", "Yukon", "Scorpion", "Baker's Dozen", "Eight Off", "Golf", "TriPeaks", "Pyramid"])
+        XCTAssertEqual(GameChoice.all.map(\.id), ["new-klondike.draw-1", "new-klondike.draw-3", "new-freecell", "new-yukon", "new-scorpion", "new-bakersdozen", "new-eightoff", "new-golf", "new-tripeaks", "new-pyramid", "new-spider.suits-1", "new-spider.suits-2", "new-spider.suits-4", "new-fortythieves"])
+        XCTAssertEqual(GameChoice.all.map(\.title), ["Klondike – Draw 1", "Klondike – Draw 3", "FreeCell", "Yukon", "Scorpion", "Baker's Dozen", "Eight Off", "Golf", "TriPeaks", "Pyramid", "Spider – 1 suit", "Spider – 2 suits", "Spider – 4 suits", "Forty Thieves"])
     }
 
     func testStatisticsKeysNameTheGameAndItsOptions() {
@@ -65,6 +65,13 @@ final class GamesTests: XCTestCase {
         }
         XCTAssertEqual(Pyramid.title(for: PyramidOptions()), "Pyramid – Recycle the waste: Twice")
         XCTAssertEqual(Klondike.title(for: KlondikeOptions(drawCount: 3)), "Klondike – Draw 3")
+        XCTAssertEqual(AnyGame(Spider(seed: 1)).statisticsKey, "spider.suits-1")
+        for suits in [1, 2, 4] {
+            var options = SpiderOptions()
+            options.suits = suits
+            XCTAssertEqual(AnyGame(Spider(seed: 1, options: options)).statisticsKey, "spider.suits-\(suits)")
+        }
+        XCTAssertEqual(AnyGame(FortyThieves(seed: 1)).statisticsKey, "fortythieves")
     }
 
     // MARK: - One saved game per game
@@ -253,6 +260,43 @@ final class GamesTests: XCTestCase {
         let layout = BoardLayout(size: size, board: BakersDozen(seed: 1).board)
         XCTAssertEqual(layout.pile(at: layout.slotCenter(.tableau(12))), .tableau(12))
         XCTAssertEqual(layout.pile(at: layout.slotCenter(.tableau(6))), .tableau(6))
+    }
+
+    // MARK: - Spider and Forty Thieves
+
+    func testSpiderAndFortyThievesFitAPhone() {
+        for size in [CGSize(width: 390, height: 700), CGSize(width: 375, height: 560)] {
+            for board in [Spider(seed: 1).board, FortyThieves(seed: 1).board] {
+                let layout = BoardLayout(size: size, board: board)
+                for spot in board.spots {
+                    let center = layout.slotCenter(spot.pile)
+                    XCTAssertGreaterThanOrEqual(center.x - layout.cardSize.width / 2, 0)
+                    XCTAssertLessThanOrEqual(center.x + layout.cardSize.width / 2, size.width)
+                }
+                XCTAssertEqual(layout.pile(at: layout.slotCenter(.tableau(9))), .tableau(9))
+                XCTAssertEqual(layout.pile(at: layout.slotCenter(.tableau(0))), .tableau(0))
+                XCTAssertGreaterThan(layout.indexScale, 1, "narrow cards get a bigger corner index")
+            }
+        }
+    }
+
+    func testSpiderStockSpeech() {
+        var game = Spider(seed: 1)
+        XCTAssertEqual(Speech.stockLabel(game), "Deal a row")
+        XCTAssertEqual(Speech.hint(.draw, in: game), "Hint: deal a row")
+        XCTAssertTrue(game.draw())
+        XCTAssertEqual(Speech.drew(game), "Row dealt")
+        while game.draw() {}
+        XCTAssertEqual(Speech.stockLabel(game), "Stock empty")
+    }
+
+    func testFortyThievesStockAndWasteSpeech() {
+        var game = FortyThieves(seed: 1)
+        XCTAssertEqual(Speech.stockLabel(game), "Draw card, 64 left")
+        XCTAssertTrue(game.draw())
+        XCTAssertEqual(Speech.drew(game), "Drew \(game.cards(in: .waste)[0].spokenName)")
+        while game.draw() {}
+        XCTAssertEqual(Speech.stockLabel(game), "Stock empty", "no redeal")
     }
 
     // MARK: - Golf and TriPeaks

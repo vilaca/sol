@@ -66,6 +66,8 @@ extension GameKind {
         case .golf: Golf.self
         case .triPeaks: TriPeaks.self
         case .pyramid: Pyramid.self
+        case .spider: Spider.self
+        case .fortyThieves: FortyThieves.self
         }
     }
 

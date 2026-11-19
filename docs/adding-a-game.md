@@ -107,7 +107,8 @@ Rules notes:
 - **Piles**: `.stock`, `.waste`, `.foundation(i)`, `.tableau(i)`, `.cell(i)`. One game's piles can mean something
   else in another: TriPeaks and Pyramid make every position a `.tableau(i)` pile of zero or one card. Add a
   `Pile` case only if nothing fits; then handle it in every `switch` over `Pile` (the compiler lists them).
-- **Two decks**: `Card(suit:rank:isFaceUp:deck:)` with `deck` 0 or 1; `Card.id` is unique across both, so
+- **Two decks**: `Card(suit:rank:isFaceUp:deck:)` with `deck` 0 or 1 (more copies when a game deals fewer suits: Spider's one
+  suit is `deck` 0...7, see `Spider.swift`); `Card.id` is unique across both, so
   build the deck as `(0...1).flatMap { d in Card.fullDeck.map { Card(suit: $0.suit, rank: $0.rank, deck: d) } }`.
 - **Runs that leave by themselves** (Scorpion, Spider): remove them inside `move` / `draw`, so one undo step
   covers both.

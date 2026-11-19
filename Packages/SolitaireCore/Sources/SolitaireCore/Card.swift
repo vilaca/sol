@@ -18,7 +18,8 @@ public struct Card: Hashable, Codable, Sendable, Identifiable {
     /// 1 (ace) through 13 (king).
     public let rank: Int
     public var isFaceUp: Bool
-    /// Which deck the card comes from, for games played with two: 0 or 1.
+    /// Which copy of the card this is, for games played with more than one deck: 0 or 1 (Forty Thieves, Spider with
+    /// four suits), up to 3 (Spider with two suits) or 7 (Spider with one suit), which deals eight copies of a suit.
     public let deck: Int
 
     public init(suit: Suit, rank: Int, isFaceUp: Bool = false, deck: Int = 0) {

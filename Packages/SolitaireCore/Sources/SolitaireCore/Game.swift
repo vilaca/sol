@@ -11,6 +11,8 @@ public enum GameKind: String, CaseIterable, Codable, Identifiable, Sendable {
     case golf
     case triPeaks = "tripeaks"
     case pyramid
+    case spider
+    case fortyThieves = "fortythieves"
 
     public var id: String { rawValue }
 }

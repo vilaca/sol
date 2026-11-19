@@ -314,6 +314,62 @@ final class SolUITests: XCTestCase {
         add(screenshot)
     }
 
+    // MARK: - Spider
+
+    /// Seed 42 deals one-suit Spider with the 9 of spades (card 112) on column 8 and the 10 of spades on column 1.
+    func testSpiderDealMoveDealRowAndUndo() {
+        tapMenu("newGame")
+        XCTAssertTrue(app.buttons["new-spider.suits-1"].waitForExistence(timeout: 5))
+        app.buttons["new-spider.suits-1"].tap()
+        XCTAssertTrue(stock.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Column 8, 9 of spades, 4 hidden cards"].exists)
+        XCTAssertEqual(moves.label, "Moves: 0")
+
+        app.buttons["card-112"].tap()
+        XCTAssertEqual(moves.label, "Moves: 1")
+        XCTAssertTrue(app.buttons["Column 1, 9 of spades"].waitForExistence(timeout: 2), "onto the 10 of spades")
+        app.buttons["undo"].tap()
+        XCTAssertEqual(moves.label, "Moves: 0")
+
+        stock.tap()
+        XCTAssertEqual(moves.label, "Moves: 1")
+        XCTAssertTrue(app.buttons["Deal a row"].exists, "the stock still has four rows")
+        let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        screenshot.name = "Spider"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+        app.buttons["undo"].tap()
+        XCTAssertEqual(moves.label, "Moves: 0")
+    }
+
+    // MARK: - Forty Thieves
+
+    /// Seed 42 deals Forty Thieves with the ace of diamonds (card 26) on top of column 4.
+    func testFortyThievesDealMoveDrawAndUndo() {
+        tapMenu("newGame")
+        XCTAssertTrue(app.buttons["new-fortythieves"].waitForExistence(timeout: 5))
+        app.buttons["new-fortythieves"].tap()
+        XCTAssertTrue(app.buttons["Draw card, 64 left"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Column 4, Ace of diamonds"].exists)
+        XCTAssertEqual(moves.label, "Moves: 0")
+
+        app.buttons["card-26"].tap()
+        XCTAssertEqual(moves.label, "Moves: 1")
+        XCTAssertTrue(app.buttons["Foundation, Ace of diamonds"].waitForExistence(timeout: 2))
+        app.buttons["undo"].tap()
+        XCTAssertEqual(moves.label, "Moves: 0")
+
+        stock.tap()
+        XCTAssertEqual(moves.label, "Moves: 1")
+        XCTAssertTrue(app.buttons["Draw card, 63 left"].waitForExistence(timeout: 2))
+        let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        screenshot.name = "Forty Thieves"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+        app.buttons["undo"].tap()
+        XCTAssertEqual(moves.label, "Moves: 0")
+    }
+
     // MARK: - VoiceOver
 
     func testVoiceOverLabelsSayWhereCardsAre() {
