@@ -25,6 +25,8 @@ struct GameView: View {
     @State private var pendingChoice: GameChoice?
     /// The hint being shown; cleared after a moment or by the next move.
     @State private var hint: Hint?
+    /// The first card of a pair (Pyramid), waiting for its partner.
+    @State private var selected: PlacedCard?
     @State private var showsNoMoves = false
     /// "No moves left" was shown for the current dead end; asked again only after a way out appeared.
     @State private var warnedNoMoves = false
@@ -71,6 +73,7 @@ struct GameView: View {
         }
         .onChange(of: model.game) { game in
             hint = nil
+            selected = nil
             warnIfStuck(game)
         }
         .onAppear { warnIfStuck(model.game) }
@@ -153,7 +156,7 @@ struct GameView: View {
             size: layout.cardSize,
             indexScale: layout.indexScale,
             accessibilityText: label,
-            isHinted: isHinted(placed, isTop: isTop)
+            isHinted: isHinted(placed, isTop: isTop) || selected?.card.id == placed.card.id
         )
             .modifier(ShakeEffect(progress: isShaking ? shakeProgress : 0))
             .offset(isDragged ? drag?.translation ?? .zero : .zero)
@@ -227,12 +230,35 @@ struct GameView: View {
         if placed.pile == .stock {
             draw()
         } else if canDrag(placed) {
-            if let destination = model.game.bestDestination(from: placed.pile, at: placed.index) {
+            if model.game.kind.type.pairsCards {
+                pair(placed)
+            } else if let destination = model.game.bestDestination(from: placed.pile, at: placed.index) {
                 _ = perform(placed, to: destination, animation: .easeInOut(duration: 0.2))
             } else {
                 rejected()
                 shake(placed)
             }
+        }
+    }
+
+    /// Pyramid: a king goes by itself; any other card is picked first (tap it again to put it back) and then
+    /// paired with the next card tapped, or with another card picked instead when the two don't fit.
+    private func pair(_ placed: PlacedCard) {
+        let animation = Animation.easeInOut(duration: 0.2)
+        if let first = selected {
+            if first.card.id == placed.card.id {
+                selected = nil
+                return
+            }
+            if perform(first, to: placed.pile, animation: animation) { return }
+        }
+        if let destination = model.game.bestDestination(from: placed.pile, at: placed.index) {
+            _ = perform(placed, to: destination, animation: animation)
+        } else if selected == nil {
+            selected = placed
+        } else {
+            rejected()
+            shake(placed)
         }
     }
 

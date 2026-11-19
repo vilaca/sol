@@ -10,6 +10,7 @@ public enum GameKind: String, CaseIterable, Codable, Identifiable, Sendable {
     case eightOff = "eightoff"
     case golf
     case triPeaks = "tripeaks"
+    case pyramid
 
     public var id: String { rawValue }
 }
@@ -68,6 +69,11 @@ public protocol SolitaireGame: Codable, Equatable, Sendable {
     static var kind: GameKind { get }
     /// Whether tapping an empty stock turns the waste back over (Klondike). Default: `true`.
     static var recyclesWaste: Bool { get }
+    /// Whether a move is picking a card and then the card it pairs with (Pyramid), so the app selects on tap
+    /// instead of sending the card somewhere. Default: `false`.
+    static var pairsCards: Bool { get }
+    /// Whether tapping the empty stock turns the waste over right now. Default: `recyclesWaste`.
+    var canRecycleWaste: Bool { get }
 
     /// A new deal. The same seed and options always give the same deal.
     init(seed: UInt64, options: Options)
@@ -112,6 +118,8 @@ public protocol SolitaireGame: Codable, Equatable, Sendable {
 
 extension SolitaireGame {
     public static var recyclesWaste: Bool { true }
+    public static var pairsCards: Bool { false }
+    public var canRecycleWaste: Bool { Self.recyclesWaste }
 
     public func canPickUp(from pile: Pile, at index: Int) -> Bool {
         let cards = cards(in: pile)

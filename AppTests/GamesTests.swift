@@ -32,8 +32,8 @@ final class GamesTests: XCTestCase {
     // MARK: - New menu
 
     func testNewMenuListsEveryGameAndVariant() {
-        XCTAssertEqual(GameChoice.all.map(\.id), ["new-klondike.draw-1", "new-klondike.draw-3", "new-freecell", "new-yukon", "new-scorpion", "new-bakersdozen", "new-eightoff", "new-golf", "new-tripeaks"])
-        XCTAssertEqual(GameChoice.all.map(\.title), ["Klondike – Draw 1", "Klondike – Draw 3", "FreeCell", "Yukon", "Scorpion", "Baker's Dozen", "Eight Off", "Golf", "TriPeaks"])
+        XCTAssertEqual(GameChoice.all.map(\.id), ["new-klondike.draw-1", "new-klondike.draw-3", "new-freecell", "new-yukon", "new-scorpion", "new-bakersdozen", "new-eightoff", "new-golf", "new-tripeaks", "new-pyramid"])
+        XCTAssertEqual(GameChoice.all.map(\.title), ["Klondike – Draw 1", "Klondike – Draw 3", "FreeCell", "Yukon", "Scorpion", "Baker's Dozen", "Eight Off", "Golf", "TriPeaks", "Pyramid"])
     }
 
     func testStatisticsKeysNameTheGameAndItsOptions() {
@@ -57,6 +57,13 @@ final class GamesTests: XCTestCase {
         var triNoWrap = TriPeaksOptions()
         triNoWrap.wrapsKingAndAce = false
         XCTAssertEqual(AnyGame(TriPeaks(seed: 1, options: triNoWrap)).statisticsKey, "tripeaks.wrap-off")
+        XCTAssertEqual(AnyGame(Pyramid(seed: 1)).statisticsKey, "pyramid.recycle-twice")
+        for (recycles, key) in [(0, "never"), (1, "once"), (2, "twice"), (-1, "always")] {
+            var options = PyramidOptions()
+            options.recycles = recycles
+            XCTAssertEqual(AnyGame(Pyramid(seed: 1, options: options)).statisticsKey, "pyramid.recycle-\(key)")
+        }
+        XCTAssertEqual(Pyramid.title(for: PyramidOptions()), "Pyramid – Recycle the waste: Twice")
         XCTAssertEqual(Klondike.title(for: KlondikeOptions(drawCount: 3)), "Klondike – Draw 3")
     }
 
@@ -292,5 +299,44 @@ final class GamesTests: XCTestCase {
         let golf = BoardLayout(size: size, board: Golf(seed: 1).board)
         XCTAssertEqual(golf.pile(at: golf.slotCenter(.waste)), .waste)
         XCTAssertNil(golf.pile(at: golf.slotCenter(.tableau(2))))
+    }
+
+    // MARK: - Pyramid
+
+    func testPyramidLabelsPairsAndLayout() {
+        // Seed 42: positions 21 and 22 are the 10 of diamonds and the 3 of hearts, free in the bottom row.
+        let game = Pyramid(seed: 42)
+        XCTAssertEqual(game.spokenName(of: .tableau(21)), "Row 7, card 1")
+        XCTAssertEqual(Speech.label(for: game.cards(in: .tableau(21))[0], in: .tableau(21), at: 0, of: game), "Row 7, card 1, 10 of diamonds")
+        XCTAssertEqual(Speech.moves(from: .tableau(21), at: 0, in: game).map(\.name), ["Pair with 3 of hearts"])
+        XCTAssertEqual(Speech.moves(from: .tableau(25), at: 0, in: game).map(\.name), ["Move to foundation"], "a king goes alone")
+        var after = game
+        after.move(from: .tableau(21), at: 0, to: .tableau(22))
+        XCTAssertEqual(Speech.moved(game.cards(in: .tableau(21))[0], to: .tableau(22), before: game, after: after, from: .tableau(21)), "10 of diamonds paired with 3 of hearts")
+        XCTAssertEqual(Speech.stockLabel(game), "Draw card, 24 left")
+        var noRecycle = PyramidOptions()
+        noRecycle.recycles = 0
+        var spent = Pyramid(seed: 42, options: noRecycle)
+        while spent.draw() {}
+        XCTAssertEqual(Speech.stockLabel(spent), "Stock empty", "no recycle left, so no 'Turn the waste over'")
+        var twice = Pyramid(seed: 42)
+        for _ in 0..<24 { twice.draw() }
+        XCTAssertEqual(Speech.stockLabel(twice), "Turn the waste over")
+
+        let size = CGSize(width: 390, height: 700)
+        let board = game.board
+        let layout = BoardLayout(size: size, board: board)
+        for spot in board.spots {
+            let center = layout.slotCenter(spot.pile)
+            XCTAssertGreaterThanOrEqual(center.x - layout.cardSize.width / 2, 0)
+            XCTAssertLessThanOrEqual(center.x + layout.cardSize.width / 2, size.width)
+        }
+        let top = layout.slotCenter(.tableau(0))
+        let left = layout.slotCenter(.tableau(1))
+        let right = layout.slotCenter(.tableau(2))
+        XCTAssertEqual(top.x, (left.x + right.x) / 2, accuracy: 0.01)
+        XCTAssertLessThan(left.y - top.y, layout.cardSize.height)
+        XCTAssertEqual(layout.pile(at: layout.slotCenter(.waste)), .waste)
+        XCTAssertEqual(layout.pile(at: layout.slotCenter(.foundation(0))), .foundation(0))
     }
 }

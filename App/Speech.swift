@@ -87,7 +87,7 @@ enum Speech {
             stock.isEmpty ? String(localized: "Reserve empty") : String(localized: "Deal the reserve")
         } else if !stock.isEmpty {
             String(localized: "Draw card, \(stock.count) left")
-        } else if type(of: game).recyclesWaste, !game.cards(in: .waste).isEmpty {
+        } else if game.canRecycleWaste, !game.cards(in: .waste).isEmpty {
             String(localized: "Turn the waste over")
         } else {
             String(localized: "Stock empty")
@@ -107,6 +107,9 @@ enum Speech {
     /// column it fits.
     static func moves(from pile: Pile, at index: Int, in game: some PlayableGame) -> [AccessibleMove] {
         var result: [AccessibleMove] = []
+        if type(of: game).pairsCards {
+            return pairs(from: pile, at: index, in: game)
+        }
         if let foundation = game.foundationDestination(from: pile, at: index) {
             result.append(AccessibleMove(name: String(localized: "Move to foundation"), destination: foundation))
         }
@@ -122,9 +125,26 @@ enum Speech {
         return result
     }
 
+    /// Pyramid: "Move to foundation" for a king, and "Pair with <card>" for each card that adds up to 13.
+    private static func pairs(from pile: Pile, at index: Int, in game: some PlayableGame) -> [AccessibleMove] {
+        var result: [AccessibleMove] = []
+        if game.canMove(from: pile, at: index, to: .foundation(0)) {
+            result.append(AccessibleMove(name: String(localized: "Move to foundation"), destination: .foundation(0)))
+        }
+        for partner in game.piles where partner != pile && !partner.isFoundation && partner != .stock && game.canMove(from: pile, at: index, to: partner) {
+            if let card = game.cards(in: partner).last {
+                result.append(AccessibleMove(name: String(localized: "Pair with \(card.spokenName)"), destination: partner))
+            }
+        }
+        return result
+    }
+
     /// What VoiceOver says after a move, e.g. "7 of clubs moved to column 5, revealed Queen of hearts".
     static func moved(_ card: Card, to destination: Pile, before: some PlayableGame, after: some PlayableGame, from source: Pile) -> String {
         var text = String(localized: "\(card.spokenName) moved to \(place(destination, in: after))")
+        if type(of: before).pairsCards, !destination.isFoundation, let partner = before.cards(in: destination).last {
+            return String(localized: "\(card.spokenName) paired with \(partner.spokenName)")
+        }
         let remaining = after.cards(in: source)
         if case .tableau = source, let top = remaining.last, !before.cards(in: source)[remaining.count - 1].isFaceUp {
             text += separator + String(localized: "revealed \(top.spokenName)")

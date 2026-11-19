@@ -290,6 +290,30 @@ final class SolUITests: XCTestCase {
         add(screenshot)
     }
 
+    // MARK: - Pyramid
+
+    /// Seed 42 deals Pyramid with the 10 of diamonds (card 35) and the 3 of hearts (card 15) free in the bottom row.
+    func testPyramidDealPairAndUndo() {
+        tapMenu("newGame")
+        app.buttons["new-pyramid"].tap()
+        XCTAssertTrue(app.buttons["Row 7, card 1, 10 of diamonds"].waitForExistence(timeout: 5))
+        XCTAssertEqual(moves.label, "Moves: 0")
+
+        app.buttons["card-35"].tap()
+        XCTAssertEqual(moves.label, "Moves: 0", "the first card of a pair is only picked")
+        app.buttons["card-15"].tap()
+        XCTAssertEqual(moves.label, "Moves: 1")
+        XCTAssertTrue(app.buttons["Foundation, 3 of hearts"].waitForExistence(timeout: 2))
+
+        app.buttons["undo"].tap()
+        XCTAssertEqual(moves.label, "Moves: 0")
+        XCTAssertTrue(app.buttons["Row 7, card 1, 10 of diamonds"].waitForExistence(timeout: 2))
+        let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        screenshot.name = "Pyramid"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+    }
+
     // MARK: - VoiceOver
 
     func testVoiceOverLabelsSayWhereCardsAre() {
